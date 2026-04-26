@@ -39,6 +39,7 @@ class Data {
   String? disbursementDate;
   double? loanAmount; // Changed to double for precision in financial data
   String? loginBank;
+
   String? bankerId;
   String? bankerName;
   String? bankerMobile;
@@ -50,6 +51,9 @@ class Data {
   String? productType;
   String? sourcing;
   String? status;
+  String? balanceTransfer;
+  String? demandDraftstatus;
+  String? demandraftRemark;
   String? comments;
   List<CommentData>? commentData;
   String? invoiceId;
@@ -92,6 +96,9 @@ class Data {
     this.productType,
     this.sourcing,
     this.status,
+    this.balanceTransfer,
+    this.demandDraftstatus,
+    this.demandraftRemark,
     this.comments,
     this.commentData,
     this.invoiceId,
@@ -136,6 +143,9 @@ class Data {
       productType: json['product_type'],
       sourcing: json['sourcing'],
       status: json['status'],
+      balanceTransfer: json['balancetransfer'],
+      demandDraftstatus: json['demand_draft_status'],
+      demandraftRemark: json['demand_draft_remark'],
       comments: json['comment_data'],
       commentData: json['comment_alldata'] != null
           ? List<CommentData>.from(

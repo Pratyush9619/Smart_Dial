@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_solutions/widget/text_style.dart';
 
+import '../controllers/theme_controller.dart';
+
 class CommonRows {
   /// ================= SINGLE ROW =================
   Widget buildSingleRow(dynamic icon, String value) {
@@ -10,7 +12,7 @@ class CommonRows {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIcon(icon),
+          _buildIcon(icon, null),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -42,7 +44,7 @@ class CommonRows {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildIcon(iconLeft),
+                _buildIcon(iconLeft, null),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -64,7 +66,7 @@ class CommonRows {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildIcon(iconRight),
+                _buildIcon(iconRight, null),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -88,20 +90,18 @@ class CommonRows {
 
   /// ================= SINGLE ROW (NO EXPAND) =================
   /// Use this ONLY when parent width is fixed
-  Widget buildSingleRowNoExpand(dynamic icon, String value) {
+  Widget buildSingleRowNoExpand(dynamic icon, String value, Color? color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
       child: Row(
         children: [
-          if (value.isNotEmpty) _buildIcon(icon),
+          if (value.isNotEmpty) _buildIcon(icon, color),
           if (value.isNotEmpty) const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              value,
-              style: AppTextStyle.headerTitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            value,
+            style: AppTextStyle.headerTitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -115,16 +115,17 @@ class CommonRows {
   }
 
   /// ================= ICON BUILDER =================
-  Widget _buildIcon(dynamic icon) {
+  Widget _buildIcon(dynamic icon, Color? color) {
     if (icon is String) {
       return SvgPicture.asset(
         icon,
         width: 20,
         height: 20,
         fit: BoxFit.contain,
+        color: color ?? Colors.grey[700],
       );
     } else if (icon is IconData) {
-      return Icon(icon, size: 20, color: Colors.grey[700]);
+      return Icon(icon, size: 20, color: color ?? Colors.grey[700]);
     } else {
       return const SizedBox.shrink();
     }

@@ -33,6 +33,8 @@ class LoginModel {
   String loanAmount;
   String telecallerId;
   String loginRequestId;
+  String bankname;
+  String bankId;
   CustomerLoginModel customerLoginModel;
 
   LoginModel({
@@ -41,6 +43,8 @@ class LoginModel {
     required this.loanAmount,
     required this.telecallerId,
     required this.loginRequestId,
+    required this.bankname,
+    required this.bankId,
     required this.customerLoginModel,
   });
 
@@ -50,6 +54,8 @@ class LoginModel {
         loanAmount: json["loan_amount"] ?? "",
         telecallerId: json["telecaller_id"] ?? "",
         loginRequestId: json["login_request_id"] ?? "",
+        bankname: json["bank_name"] ?? "",
+        bankId: json["bank_id"] ?? "",
         customerLoginModel:
             CustomerLoginModel.fromJson(json["customer_data"] ?? {}),
       );
@@ -65,12 +71,14 @@ class LoginModel {
 }
 
 class CustomerLoginModel {
+  String customerId;
   String customerName;
   dynamic dob;
   String companyName;
   String netIncome;
 
   CustomerLoginModel({
+    required this.customerId,
     required this.customerName,
     required this.dob,
     required this.companyName,
@@ -79,6 +87,7 @@ class CustomerLoginModel {
 
   factory CustomerLoginModel.fromJson(Map<String, dynamic> json) =>
       CustomerLoginModel(
+        customerId: json["customer_id"] ?? "",
         customerName: json["customer_name"] ?? "",
         dob: json["dob"] ?? "",
         companyName: json["companyName"] ?? "",
@@ -86,6 +95,7 @@ class CustomerLoginModel {
       );
 
   Map<String, dynamic> toJson() => {
+        "customer_id": customerId,
         "customer_name": customerName,
         "dob": dob,
         "companyName": companyName,

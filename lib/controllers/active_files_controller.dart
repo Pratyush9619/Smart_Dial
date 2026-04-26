@@ -15,7 +15,7 @@ class ActiveFilesController extends GetxController {
   final CommonFilterController filterController =
       Get.find<CommonFilterController>();
 
-  RxBool isLoading = false.obs;
+  RxBool isFiltering = false.obs;
 
   final ScrollController filterScrollController = ScrollController();
 
@@ -87,9 +87,8 @@ class ActiveFilesController extends GetxController {
   }
 
   Future<void> refreshData() async {
-    if (isLoading.value) return;
-    
-    isLoading(true);
+    if (dataController.isLoading.value) return;
+
     try {
       currentStatus.value = 0;
 
@@ -100,8 +99,6 @@ class ActiveFilesController extends GetxController {
         "Failed to refresh data: $e",
         snackPosition: SnackPosition.BOTTOM,
       );
-    } finally {
-      isLoading(false);
     }
   }
   // void _handleDateChange() {
@@ -133,7 +130,7 @@ class ActiveFilesController extends GetxController {
   }
 
   void updateFilteredList() {
-    isLoading(true);
+    isFiltering(true);
     try {
       final source = dataController.dataList;
 
@@ -174,11 +171,8 @@ class ActiveFilesController extends GetxController {
       }
 
       filteredList.assignAll(tempList);
-    } catch (e) {
-      isLoading(false);
-      filteredList.assignAll([]);
     } finally {
-      isLoading(false);
+      isFiltering(false);
     }
   }
 }

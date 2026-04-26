@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,7 +13,6 @@ import 'package:smart_solutions/widget/common_scaffold.dart';
 import 'package:smart_solutions/widget/loading_page.dart';
 import 'package:smart_solutions/widget/suggestin_textfiels.dart';
 import 'package:smart_solutions/widget/text_style.dart';
-
 import '../constants/services.dart';
 
 class AppColors {
@@ -24,17 +22,31 @@ class AppColors {
   static const Color backgroundColor = Colors.white;
 }
 
-class LoginRequestForm extends StatelessWidget {
+class LoginRequestForm extends StatefulWidget {
+  const LoginRequestForm({super.key});
+
+  @override
+  State<LoginRequestForm> createState() => _LoginRequestFormState();
+}
+
+class _LoginRequestFormState extends State<LoginRequestForm> {
   final LoginRequestController controller = Get.find<LoginRequestController>();
+
   final FollowBackFormController _followBackFormController =
       Get.find<FollowBackFormController>();
 
-  final _formKey = GlobalKey<FormState>(); // Form key for validation
-
-  LoginRequestForm({super.key});
-
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController customerNameController = TextEditingController();
+
   final ThemeController themeController = Get.find<ThemeController>();
+
+  @override
+  initState() {
+    controller.getLoginRequestBanks();
+    controller.getSourcingList();
+    controller.getStatusData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +67,7 @@ class LoginRequestForm extends StatelessWidget {
           controller.remarksList.value = []; // To hold multiple remarks
           controller.currentId = ''.obs;
           controller.sourceId.value = '';
+          controller.selectedLoanStatus.value = '';
         }
       },
       child: CommonScaffold(
@@ -214,6 +227,12 @@ class LoginRequestForm extends StatelessWidget {
                             _buildSourcingDropdown(),
                             const SizedBox(height: 10),
 
+                            StaticStoredData.roleName != 'telecaller' &&
+                                    StaticStoredData.roleName != 'teamleader'
+                                ? _buildStatusDropdown()
+                                : const SizedBox.shrink(),
+                            const SizedBox(height: 10),
+
                             // _buildTextField(
                             //   label: 'Common remark',
                             //   content: controller.commonRemark.value,
@@ -228,6 +247,15 @@ class LoginRequestForm extends StatelessWidget {
                               child: Obx(() => SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: themeController
+                                              .primaryColor.value,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          )),
                                       onPressed: controller.isSubmitting.value
                                           ? null
                                           : () async {
@@ -280,7 +308,7 @@ class LoginRequestForm extends StatelessWidget {
     required ValueChanged<String> onChanged,
     Widget? prefixIcon,
     TextInputType inputType = TextInputType.text,
-    int maxLines = 1,
+    int? maxLines = 1,
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters, // ⭐ add this
   }) {
@@ -358,7 +386,7 @@ class LoginRequestForm extends StatelessWidget {
         remarkFields.add(
           _buildTextField(
             content: controller.remarksList[i],
-            maxLines: 3,
+            maxLines: null,
             label: 'Remark ${i + 1}',
             onChanged: (value) {
               // Update remarksList with the new value
@@ -488,6 +516,7 @@ class LoginRequestForm extends StatelessWidget {
                     : (newValue) {
                         logOutput("new value is $newValue");
                         if (newValue != null) {
+                          controller.sendingBankId.value = newValue;
                           controller.bankId.value = newValue;
                         }
                       },
@@ -600,6 +629,107 @@ class LoginRequestForm extends StatelessWidget {
               ),
             ),
     );
+  }
+
+  Widget _buildStatusDropdown() {
+    return Obx(
+      () => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //  Text('Status', style: TextStyle(color: AppColors.secondaryColor)),
+            DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                hintText: 'Status',
+                prefixIcon: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 5.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/status.svg',
+                          height: 24,
+                          width: 24,
+                          color: themeController.primaryColor.value,
+                        ),
+                        SizedBox(width: 5.w),
+                        VerticalDivider(
+                          thickness: 1,
+                          color: themeController.primaryColor.value,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                labelStyle: const TextStyle(color: AppColors.secondaryColor),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: themeController.primaryColor.value,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: themeController.primaryColor.value,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: AppColors.backgroundColor,
+              ),
+              value: _getInitialStatusValue(),
+              hint: const Text(
+                'Select Status',
+                style: TextStyle(color: Colors.grey),
+              ),
+              items: _buildStatusDropdownItems(),
+              onChanged: controller.isEdit.value
+                  ? (newValue) {
+                      if (newValue != null) {
+                        final selected = controller.loanStatusList
+                            .firstWhere((e) => e.id == newValue);
+
+                        controller.selectedLoanStatus.value = selected.id;
+                      }
+                    }
+                  : null,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a Source';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? _getInitialStatusValue() {
+    final existing = controller.loanStatusList.firstWhereOrNull((e) =>
+        (e.id).toLowerCase().trim() ==
+        controller.selectedLoanStatus.value.toLowerCase().trim());
+    return existing?.id;
+  }
+
+  List<DropdownMenuItem<String>> _buildStatusDropdownItems() {
+    return controller.loanStatusList.map((status) {
+      return DropdownMenuItem<String>(
+        value: status.id,
+        child: Text(
+          status.title,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }).toList();
   }
 
   // Helper method to build dropdown items

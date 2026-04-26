@@ -37,11 +37,11 @@ class LoginRequestScreen extends StatelessWidget {
     final LoginRequestController controller =
         Get.find<LoginRequestController>();
 
-    final DataController _dataController = Get.find<DataController>();
-
     final ThemeController themeController = Get.find<ThemeController>();
 
     final bool istelecaller = StaticStoredData.roleName == 'telecaller';
+
+    final DataController dataController = Get.find<DataController>();
 
     return CommonScaffold(
         title: title,
@@ -54,7 +54,7 @@ class LoginRequestScreen extends StatelessWidget {
                   onPressed: () {
                     controller.isEdit.value = true;
                     controller.isNew.value = true;
-                    Get.to(() => LoginRequestForm());
+                    Get.to(() => const LoginRequestForm());
                   },
                 )
               : const SizedBox.shrink()
@@ -135,10 +135,14 @@ class LoginRequestScreen extends StatelessWidget {
                                     : Colors.redAccent.shade200,
                             amount: CurrencyUtils.formatIndianCurrency(
                                 data.loanAmount),
-                            showEdit: StaticStoredData.roleName != 'telecaller',
+                            showEdit:
+                                StaticStoredData.roleName != 'telecaller' &&
+                                    StaticStoredData.roleName != 'teamleader',
                             showMoveToLogin:
-                                StaticStoredData.roleName != 'telecaller',
+                                StaticStoredData.roleName != 'telecaller' &&
+                                    StaticStoredData.roleName != 'teamleader',
                             onMoveToLogin: () async {
+                              //      dataController.customer_id.value = data.customerId ?? '';
                               await Get.to(() => DataEntryForm(
                                     id: data.id,
                                     tellecallerId: data.telecallerId,
@@ -153,18 +157,20 @@ class LoginRequestScreen extends StatelessWidget {
                               controller.contactNumber.value =
                                   data.contactNumber;
                               controller.loanAmount.value = data.loanAmount;
-                              controller.loanStatus.value =
+                              controller.selectedLoanStatus.value =
                                   ((data.loanStatus == null ||
                                           data.loanStatus!.isEmpty)
                                       ? "NA"
                                       : data.loanStatus)!;
                               controller.bankId.value = data.bankName ?? "";
+                              controller.sendingBankId.value =
+                                  data.bankId ?? "";
                               controller.commonRemark.value = data.commonRemark;
-                              controller.sourceId.value =
-                                  data.sourcingTitle ?? "";
+                              controller.sourceId.value = data.sourcing ?? "";
+                              controller.telecallerId.value = data.telecallerId;
 
                               controller.getRemarks();
-                              await Get.to(() => LoginRequestForm());
+                              await Get.to(() => const LoginRequestForm());
 
                               controller.getLoginRequestList();
                             },

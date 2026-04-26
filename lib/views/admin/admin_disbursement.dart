@@ -151,71 +151,57 @@ class _AdminDisbursementState extends State<AdminDisbursement> {
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              /// ⭐ TOP ROW (COUNT + AMOUNT)
+              /// 🔹 TOTAL ROW (TOP)
               Row(
                 children: [
-                  /// 🔵 TOTAL COUNT BADGE
-                  Container(
-                    height: 54,
-                    width: 54,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xff4facfe), Color(0xff00f2fe)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(.25),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        )
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        totalSum.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 14),
-
-                  /// 💰 AMOUNT CARD
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(.08),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.green.withOpacity(.25),
-                        ),
+                        color: Colors.blue.withOpacity(.10),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: const [
+                          Icon(Icons.folder_open, size: 16, color: Colors.blue),
+                          SizedBox(width: 6),
+                          Text(
+                            "Total",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(.10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.currency_rupee,
-                              size: 20, color: Colors.green),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              CurrencyUtils.formatAmount(
-                                  amountTotal.toString()),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
+                              size: 16, color: Colors.green),
+                          const SizedBox(width: 4),
+                          Text(
+                            CurrencyUtils.formatAmount(amountTotal.toString()),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.green,
                             ),
                           ),
                         ],
@@ -225,38 +211,32 @@ class _AdminDisbursementState extends State<AdminDisbursement> {
                 ],
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
 
-              /// ⭐ BOTTOM STATS CHIPS
+              /// 🔹 LOGIN & DISBURSED (BOTTOM)
               Row(
                 children: [
-                  /// LOGIN CHIP
+                  /// LOGIN
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                          horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.blue.withOpacity(.08),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
                           Icon(Icons.login,
-                              size: 18, color: Colors.blue.shade700),
+                              size: 16, color: Colors.blue.shade700),
                           const SizedBox(width: 6),
-                          Text(
-                            "Login",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue.shade700,
-                            ),
-                          ),
+                          const Text("Login", style: TextStyle(fontSize: 11)),
                           const Spacer(),
                           Text(
                             loginTotal.toString(),
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
                               color: Colors.blue.shade900,
                             ),
                           ),
@@ -265,35 +245,30 @@ class _AdminDisbursementState extends State<AdminDisbursement> {
                     ),
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
 
-                  /// DISBURSED CHIP
+                  /// DISBURSED
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                          horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.orange.withOpacity(.08),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.check_circle_outline,
-                              size: 18, color: Colors.orange),
+                              size: 16, color: Colors.orange),
                           const SizedBox(width: 6),
-                          const Text(
-                            "Disbursed",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.orange,
-                            ),
-                          ),
+                          const Text("Disbursed",
+                              style: TextStyle(fontSize: 11)),
                           const Spacer(),
                           Text(
                             "$disbursedTotal",
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
                               color: Colors.orange,
                             ),
                           ),
@@ -305,6 +280,287 @@ class _AdminDisbursementState extends State<AdminDisbursement> {
               ),
             ],
           )
+
+          //  Column(
+          //   children: [
+          //     /// 🔹 TOTAL ROW (TOP)
+          //     Row(
+          //       children: [
+          //         Container(
+          //           padding:
+          //               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          //           decoration: BoxDecoration(
+          //             color: Colors.blue.withOpacity(.10),
+          //             borderRadius: BorderRadius.circular(12),
+          //           ),
+          //           child: Row(
+          //             mainAxisSize: MainAxisSize.min,
+          //             children: const [
+          //               Icon(Icons.folder_open, size: 16, color: Colors.blue),
+          //               SizedBox(width: 6),
+          //               Text(
+          //                 "Total",
+          //                 style: TextStyle(
+          //                   fontSize: 13,
+          //                   fontWeight: FontWeight.w700,
+          //                   color: Colors.blue,
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //         const Spacer(),
+          //         Container(
+          //           padding:
+          //               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          //           decoration: BoxDecoration(
+          //             color: Colors.green.withOpacity(.10),
+          //             borderRadius: BorderRadius.circular(12),
+          //           ),
+          //           child: Row(
+          //             mainAxisSize: MainAxisSize.min,
+          //             children: [
+          //               const Icon(Icons.currency_rupee,
+          //                   size: 16, color: Colors.green),
+          //               const SizedBox(width: 4),
+          //               Text(
+          //                 CurrencyUtils.formatAmount(amountTotal.toString()),
+          //                 style: const TextStyle(
+          //                   fontSize: 14,
+          //                   fontWeight: FontWeight.w700,
+          //                   color: Colors.green,
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+
+          //     const SizedBox(height: 10),
+
+          //     Row(
+          //       children: [
+          //         /// LOGIN
+          //         Expanded(
+          //           child: Container(
+          //             padding: const EdgeInsets.symmetric(
+          //                 horizontal: 10, vertical: 8),
+          //             decoration: BoxDecoration(
+          //               color: Colors.blue.withOpacity(.08),
+          //               borderRadius: BorderRadius.circular(10),
+          //             ),
+          //             child: Row(
+          //               children: [
+          //                 Icon(Icons.login,
+          //                     size: 16, color: Colors.blue.shade700),
+          //                 const SizedBox(width: 6),
+          //                 const Text(
+          //                   "Login",
+          //                   style: TextStyle(fontSize: 11),
+          //                 ),
+          //                 const Spacer(),
+          //                 Text(
+          //                   loginTotal.toString(),
+          //                   style: TextStyle(
+          //                     fontSize: 13,
+          //                     fontWeight: FontWeight.w700,
+          //                     color: Colors.blue.shade900,
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         ),
+
+          //         const SizedBox(width: 8),
+
+          //         /// DISBURSED
+          //         Expanded(
+          //           child: Container(
+          //             padding: const EdgeInsets.symmetric(
+          //                 horizontal: 10, vertical: 8),
+          //             decoration: BoxDecoration(
+          //               color: Colors.orange.withOpacity(.08),
+          //               borderRadius: BorderRadius.circular(10),
+          //             ),
+          //             child: Row(
+          //               children: [
+          //                 const Icon(Icons.check_circle_outline,
+          //                     size: 16, color: Colors.orange),
+          //                 const SizedBox(width: 6),
+          //                 const Text(
+          //                   "Disbursed",
+          //                   style: TextStyle(fontSize: 11),
+          //                 ),
+          //                 const Spacer(),
+          //                 Text(
+          //                   "$disbursedTotal",
+          //                   style: const TextStyle(
+          //                     fontSize: 13,
+          //                     fontWeight: FontWeight.w700,
+          //                     color: Colors.orange,
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //     // /// ⭐ TOP ROW (COUNT + AMOUNT)
+          //     // Row(
+          //     //   children: [
+          //     //     /// 🔵 TOTAL COUNT BADGE
+          //     //     // Container(
+          //     //     //   height: 54,
+          //     //     //   width: 54,
+          //     //     //   decoration: BoxDecoration(
+          //     //     //     gradient: const LinearGradient(
+          //     //     //       colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+          //     //     //       begin: Alignment.topLeft,
+          //     //     //       end: Alignment.bottomRight,
+          //     //     //     ),
+          //     //     //     borderRadius: BorderRadius.circular(16),
+          //     //     //     boxShadow: [
+          //     //     //       BoxShadow(
+          //     //     //         color: Colors.blue.withOpacity(.25),
+          //     //     //         blurRadius: 12,
+          //     //     //         offset: const Offset(0, 6),
+          //     //     //       )
+          //     //     //     ],
+          //     //     //   ),
+          //     //     //   child: Center(
+          //     //     //     child: Text(
+          //     //     //       totalSum.toString(),
+          //     //     //       style: const TextStyle(
+          //     //     //         color: Colors.white,
+          //     //     //         fontWeight: FontWeight.w700,
+          //     //     //         fontSize: 18,
+          //     //     //       ),
+          //     //     //     ),
+          //     //     //   ),
+          //     //     // ),
+
+          //     //     const SizedBox(width: 14),
+
+          //     //     /// 💰 AMOUNT CARD
+          //     //     Expanded(
+          //     //       child: Container(
+          //     //         padding: const EdgeInsets.symmetric(
+          //     //             horizontal: 14, vertical: 12),
+          //     //         decoration: BoxDecoration(
+          //     //           color: Colors.green.withOpacity(.08),
+          //     //           borderRadius: BorderRadius.circular(14),
+          //     //           border: Border.all(
+          //     //             color: Colors.green.withOpacity(.25),
+          //     //           ),
+          //     //         ),
+          //     //         child: Row(
+          //     //           children: [
+          //     //             const Icon(Icons.currency_rupee,
+          //     //                 size: 20, color: Colors.green),
+          //     //             const SizedBox(width: 6),
+          //     //             Expanded(
+          //     //               child: Text(
+          //     //                 CurrencyUtils.formatAmount(
+          //     //                     amountTotal.toString()),
+          //     //                 maxLines: 1,
+          //     //                 overflow: TextOverflow.ellipsis,
+          //     //                 style: const TextStyle(
+          //     //                   color: Colors.green,
+          //     //                   fontWeight: FontWeight.w700,
+          //     //                   fontSize: 15,
+          //     //                 ),
+          //     //               ),
+          //     //             ),
+          //     //           ],
+          //     //         ),
+          //     //       ),
+          //     //     ),
+          //     //   ],
+          //     // ),
+
+          //     // const SizedBox(height: 14),
+
+          //     // /// ⭐ BOTTOM STATS CHIPS
+          //     // Row(
+          //     //   children: [
+          //     //     /// LOGIN CHIP
+          //     //     Expanded(
+          //     //       child: Container(
+          //     //         padding: const EdgeInsets.symmetric(
+          //     //             horizontal: 12, vertical: 10),
+          //     //         decoration: BoxDecoration(
+          //     //           color: Colors.blue.withOpacity(.08),
+          //     //           borderRadius: BorderRadius.circular(12),
+          //     //         ),
+          //     //         child: Row(
+          //     //           children: [
+          //     //             Icon(Icons.login,
+          //     //                 size: 18, color: Colors.blue.shade700),
+          //     //             const SizedBox(width: 6),
+          //     //             Text(
+          //     //               "Login",
+          //     //               style: TextStyle(
+          //     //                 fontSize: 12,
+          //     //                 color: Colors.blue.shade700,
+          //     //               ),
+          //     //             ),
+          //     //             const Spacer(),
+          //     //             Text(
+          //     //               loginTotal.toString(),
+          //     //               style: TextStyle(
+          //     //                 fontWeight: FontWeight.bold,
+          //     //                 fontSize: 14,
+          //     //                 color: Colors.blue.shade900,
+          //     //               ),
+          //     //             ),
+          //     //           ],
+          //     //         ),
+          //     //       ),
+          //     //     ),
+
+          //     //     const SizedBox(width: 10),
+
+          //     //     /// DISBURSED CHIP
+          //     //     Expanded(
+          //     //       child: Container(
+          //     //         padding: const EdgeInsets.symmetric(
+          //     //             horizontal: 12, vertical: 10),
+          //     //         decoration: BoxDecoration(
+          //     //           color: Colors.orange.withOpacity(.08),
+          //     //           borderRadius: BorderRadius.circular(12),
+          //     //         ),
+          //     //         child: Row(
+          //     //           children: [
+          //     //             const Icon(Icons.check_circle_outline,
+          //     //                 size: 18, color: Colors.orange),
+          //     //             const SizedBox(width: 6),
+          //     //             const Text(
+          //     //               "Disbursed",
+          //     //               style: TextStyle(
+          //     //                 fontSize: 12,
+          //     //                 color: Colors.orange,
+          //     //               ),
+          //     //             ),
+          //     //             const Spacer(),
+          //     //             Text(
+          //     //               "$disbursedTotal",
+          //     //               style: const TextStyle(
+          //     //                 fontWeight: FontWeight.bold,
+          //     //                 fontSize: 14,
+          //     //                 color: Colors.orange,
+          //     //               ),
+          //     //             ),
+          //     //           ],
+          //     //         ),
+          //     //       ),
+          //     //     ),
+          //     //   ],
+          //     // ),
+          //   ],
+          // )
 
           //  Column(
           //   children: [

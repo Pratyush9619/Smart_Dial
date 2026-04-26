@@ -130,8 +130,12 @@ class _ActiveFilesState extends State<ActiveFiles> {
             ]),
           ),
           Expanded(child: Obx(() {
-            if (_activeFilesController.isLoading.value) {
+            if (dataController.isLoading.value) {
               return const Center(child: LoadingPage());
+            }
+
+            if (_activeFilesController.isFiltering.value) {
+              return const Center(child: CircularProgressIndicator());
             }
 
             final list = _activeFilesController.filteredList;
@@ -164,22 +168,6 @@ class _ActiveFilesState extends State<ActiveFiles> {
                 totalAmount: CurrencyUtils.formatIndianCurrency(totalAmount),
               ),
               Expanded(child: Obx(() {
-                if (_activeFilesController.isLoading.value) {
-                  return const Center(child: LoadingPage());
-                }
-                if (_activeFilesController.filteredList.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.no_sim, size: 50, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text('No data entries available',
-                            style: TextStyle(fontSize: 16, color: Colors.grey)),
-                      ],
-                    ),
-                  );
-                }
                 return RefreshIndicator(
                   onRefresh: () => _activeFilesController.refreshData(),
                   child: ListView.builder(
@@ -222,10 +210,11 @@ class _ActiveFilesState extends State<ActiveFiles> {
                                   : Colors.redAccent.shade200,
                           amount: CurrencyUtils.formatIndianCurrency(
                               data.loanAmount),
-                          showEdit: StaticStoredData.roleName != 'telecaller',
-                          onEdit: () {
+                          showEdit: StaticStoredData.roleName != 'telecaller' &&
+                              StaticStoredData.roleName != 'teamleader',
+                          onEdit: () async {
                             dataController.editLoadData();
-                            Get.to(DataEntryForm(
+                            await Get.to(DataEntryForm(
                               id: data.id,
                               tellecallerId: data.teleCallerId,
                               dsaId: data.dsaName,

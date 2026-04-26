@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +22,7 @@ import 'package:smart_solutions/models/tellecaller_name_model.dart';
 import 'package:smart_solutions/services/api_service.dart';
 import 'package:smart_solutions/constants/api_urls.dart';
 import '../constants/services.dart';
+import 'theme_controller.dart';
 
 class DataController extends GetxController {
   final ApiService _apiService = ApiService();
@@ -71,6 +73,7 @@ class DataController extends GetxController {
   var date = ''.obs;
   var contactNumber = ''.obs;
   var customerName = ''.obs;
+  var customerId = ''.obs;
   var income = ''.obs;
   var companyName = ''.obs;
 
@@ -82,9 +85,12 @@ class DataController extends GetxController {
   var selectedDsaId = ''.obs;
   var selectedproductType = ''.obs;
   var selectedBankName = ''.obs;
+  var selectedBankId = ''.obs;
   var selectedBankerName = ''.obs;
   var selectTelecallerName = ''.obs;
   var selectedStatus = ''.obs;
+  var selectedStatusName = ''.obs;
+
   var selectedSource = ''.obs;
 
 //  var loginBank = ''.obs;
@@ -120,6 +126,8 @@ class DataController extends GetxController {
   final CommonFilterController _commonFilterController =
       Get.find<CommonFilterController>();
 
+  ThemeController themeController = Get.find<ThemeController>();
+
   final mobileController = TextEditingController();
   final nameController = TextEditingController();
   final companyController = TextEditingController();
@@ -137,84 +145,6 @@ class DataController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    // ever(selectedBankName, (value) {
-    //   if (value != null && value.toString().isNotEmpty) {
-    //     getBankerNameByloginBank(dsaId.value, value.toString());
-    //   }
-    // });
-
-    // // 🔁 Rx → Controller (API update)
-    // ever(contactNumber, (value) {
-    //   if (mobileController.text != value) {
-    //     mobileController.text = value;
-    //   }
-    // });
-
-    // ever(customerName, (value) {
-    //   if (nameController.text != value) {
-    //     nameController.text = value;
-    //   }
-    // });
-
-    // ever(companyName, (value) {
-    //   if (companyController.text != value) {
-    //     companyController.text = value;
-    //   }
-    // });
-
-    // ever(income, (value) {
-    //   if (incomeController.text != value) {
-    //     incomeController.text = value;
-    //   }
-    // });
-
-    // ever(teamleader, (value) {
-    //   if (teamleaderController.text != value) {
-    //     teamleaderController.text = value;
-    //   }
-    // });
-
-    // ever(dob, (value) {
-    //   if (dobController.text != value) {
-    //     dobController.text = value;
-    //   }
-    // });
-
-    // ever(date, (value) {
-    //   if (dateController.text != value) {
-    //     dateController.text = value;
-    //   }
-    // });
-
-    // // 🔁 Controller → Rx (user typing)
-    // mobileController.addListener(() {
-    //   contactNumber.value = mobileController.text;
-    // });
-
-    // nameController.addListener(() {
-    //   customerName.value = nameController.text;
-    // });
-
-    // companyController.addListener(() {
-    //   companyName.value = companyController.text;
-    // });
-
-    // incomeController.addListener(() {
-    //   income.value = incomeController.text;
-    // });
-
-    // loanAmountController.addListener(() {
-    //   loanAmount.value = loanAmountController.text;
-    // });
-
-    // caseStudyController.addListener(() {
-    //   caseStudy.value = caseStudyController.text;
-    // });
-
-    // commentController.addListener(() {
-    //   comments.value = commentController.text;
-    // });
 
     ever(selectedBankName, (value) {
       if (value != null && value.toString().isNotEmpty) {
@@ -316,8 +246,7 @@ class DataController extends GetxController {
     // ✅ Clear input
     newComment.value = '';
 
-    // ✅ Move focus to newly added field
-    Future.delayed(const Duration(milliseconds: 100), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (newItem.focusNode.canRequestFocus) {
         newItem.focusNode.requestFocus();
       }
@@ -451,8 +380,8 @@ class DataController extends GetxController {
         errorMessage.value,
         snackPosition: SnackPosition.BOTTOM,
       );
-      isLoading(false);
     } finally {
+      isLoading(false);
       isDataEntryLoading(false);
     }
   }
@@ -540,11 +469,9 @@ class DataController extends GetxController {
     try {
       // Prepare the fields map
       var fields = {
-        // 'id': id.value,
-        'dsaName': dsaName.value,
-        'date': DateFormat('yyyy-MM-dd HH:mm:ss').format(
-          DateFormat('dd-MM-yy HH:mm:ss').parse(date.value),
-        ),
+        'dsaName': selectedDsaId.value,
+        'date': DateFormat('yyyy-MM-dd HH:mm:ss')
+            .format(DateFormat('dd-MM-yy HH:mm:ss').parse(date.value)),
         'mobile_no': contactNumber.value,
         "customer_name": customerName.value,
         // 'customer_id': id.value,
@@ -563,18 +490,23 @@ class DataController extends GetxController {
         'teleCallerid': tellecallerId.value,
         'teamLeader': teamleaderId.value,
         'product_type': selectedproductType.value,
-        'sourcing': source.value,
-        'status': selectedStatus.value,
+        'sourcing': selectedSource.value,
+        'status': selectedStatusName.value,
         'balancetransfer':
             selectedBanktransactionType.value == 'Yes' ? "1" : "2",
         'demand_draft_status':
             selectedDemandDraftStatus.value == 'Open' ? "1" : "2",
         'demand_draft_remark': '',
         'telecaller_id': StaticStoredData.userId,
+        'customer_id': customerId.value
       };
 
       if (!isMovetoLogin.value) {
         fields['id'] = id.value;
+      }
+
+      if (isMovetoLogin.value) {
+        fields['login_req_id'] = loginRequestId.value;
       }
 
       for (int i = 0; i < commentList.length; i++) {
@@ -583,6 +515,7 @@ class DataController extends GetxController {
           'user_id[$i]': commentList[i].userId ?? '',
           'comments[$i]': commentList[i].comment ?? '',
           'comment_id[$i]': commentList[i].id ?? '',
+          'comment_date[$i]': commentList[i].date ?? ''
         });
       }
       logOutput('Request fields: $fields');
@@ -633,6 +566,7 @@ class DataController extends GetxController {
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body)['data'];
+
         final List<DsaModel> sourceList =
             responseData.map((e) => DsaModel.fromJson(e)).toList();
         if (sourceList.isNotEmpty) {
@@ -719,12 +653,12 @@ class DataController extends GetxController {
         final List<dynamic> responseData = json.decode(response.body)['data'];
         final List<BankerDetailsData> bankername =
             responseData.map((e) => BankerDetailsData.fromJson(e)).toList();
-        if (bankername.isNotEmpty) {
-          selectedBankerName.value = bankername.first.bankerName.toString();
-          bankerMobile.value = bankername.first.mobile.toString();
-          bankerEmail.value = bankername.first.email.toString();
-          //bankerNameList.assignAll(bankername);
-        }
+        // if (bankername.isNotEmpty) {
+        //   //     selectedBankerName.value = bankername.first.bankerName.toString();
+        bankerMobile.value = bankername.first.mobile.toString();
+        bankerEmail.value = bankername.first.email.toString();
+        //bankerNameList.assignAll(bankername);
+        // }
       }
     } catch (e) {
       logOutput('An error occurred while fetching source list: $e');
@@ -808,14 +742,85 @@ class DataController extends GetxController {
         final moveToLoginModel = moveToLoginModelFromJson(response.body);
         final data = moveToLoginModel.data;
 
+        if (data.customerLoginModel.customerName == null ||
+            data.customerLoginModel.customerName.isEmpty) {
+          Get.dialog(
+            WillPopScope(
+              onWillPop: () =>
+                  Future.value(false), // Prevent back button dismissal
+              child: AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                title: const Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Colors.redAccent,
+                      size: 28,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Error',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                content: const Text(
+                  'Customer name not found.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                actions: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: themeController.primaryColor.value,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        Get.back(); // close dialog
+                        Get.back(); // go to previous screen
+                      },
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            barrierDismissible: false,
+          );
+
+          return;
+        }
+
         contactNumber.value = data.contactNumber;
         selectedSource.value = data.sourcing;
         loanAmountController.text = data.loanAmount;
         selectTelecallerName.value = data.telecallerId;
         loginRequestId.value = data.loginRequestId;
 
+        selectedBankName.value = data.bankname;
         customerName.value = data.customerLoginModel.customerName;
-        dob.value = data.customerLoginModel.dob;
+        customerId.value = data.customerLoginModel.customerId;
+        dob.value = DateFormat('dd-MM-yyyy')
+            .format(DateTime.parse(data.customerLoginModel.dob));
         companyName.value = data.customerLoginModel.companyName;
         income.value = data.customerLoginModel.netIncome;
 
@@ -844,7 +849,11 @@ class DataController extends GetxController {
           final entry = dataEntryModel.data!
               .firstWhere((entry) => entry.id == dataId.toString());
 
+          final amount = double.tryParse(entry.loanAmount.toString());
+
           // Assigning values to observables
+          selectedDsaId.value = entry.dsaName.toString();
+          selectedStatusName.value = entry.status.toString();
           id.value = entry.id.toString();
           dsaName.value = entry.dsaName.toString();
           contactNumber.value = entry.mobileNo.toString();
@@ -852,12 +861,20 @@ class DataController extends GetxController {
           income.value = entry.income ?? '';
           companyName.value = entry.companyName ?? '';
           selectedCaseType.value = entry.caseType.toString();
-          loanAmount.value = entry.loanAmount.toString();
-          date.value =
-              formatDate(entry.date?.toString(), 'dd-MM-yyyy HH:mm:ss');
-          dob.value = formatDate(entry.dob?.toString(), 'dd-MM-yyyy');
+          loanAmount.value = amount == null
+              ? ''
+              : (amount % 1 == 0
+                  ? amount.toInt().toString()
+                  : amount.toString());
+          date.value = DateFormat('dd-MM-yyyy HH:mm:ss')
+              .format(DateTime.parse(entry.date.toString()));
+          // date.value =
+          //     formatDate(entry.date?.toString(), 'dd-MM-yyyy HH:mm:ss');
+          dob.value = formatDate(entry.dob, 'dd-MM-yyyy');
           selectedproductType.value = entry.productType ?? '';
-          bankerMobile.value = entry.bankerMobile ?? '';
+          selectedBankerName.value = entry.bankerName ?? '';
+          //    selectedBankId.value = entry.bankerId ?? '';
+
           selectedBankName.value = entry.loginBank ?? '';
           selectedBankerName.value = entry.bankerName ?? '';
           selectedStatus.value = entry.status ?? '';
@@ -876,6 +893,10 @@ class DataController extends GetxController {
           //    telecaller.value = entry.teleCallerName ?? '';
           teamleader.value = entry.tlName ?? '';
           teamleaderId.value = entry.teamLeader ?? '';
+          selectedBanktransactionType.value =
+              entry.balanceTransfer == "1" ? 'Yes' : 'No';
+          selectedDemandDraftStatus.value =
+              entry.demandDraftstatus == "1" ? 'Open' : 'Closed';
           //     status.value = entry.status ?? '';
           //    source.value = entry.sourcing ?? '';
           caseStudy.value = entry.caseStudy ?? '';
@@ -922,23 +943,23 @@ class DataController extends GetxController {
         // final List<dynamic> dataList = responseData['data'];
 
         // final Map<String, dynamic> firstItem = dataList[0];
-
+        teamleaderId.value = responseData['data']['team_leader'].toString();
         teamleader.value = responseData['data']['name'];
-        date.value = DateFormat('dd-MM-yy HH:mm:ss').format(DateTime.now());
+        //     date.value = DateFormat('dd-MM-yy HH:mm:ss').format(DateTime.now());
       }
     } catch (e) {
       logOutput('An error occurred while fetching source list: $e');
     }
   }
+}
 
-  String formatDate(String? date, String format) {
-    if (date == null || date.isEmpty) return '';
+String formatDate(String? date, String format) {
+  if (date == null || date.isEmpty) return '';
 
-    try {
-      final parsedDate = DateTime.parse(date);
-      return DateFormat(format).format(parsedDate);
-    } catch (e) {
-      return ''; // fallback if invalid
-    }
+  try {
+    final parsedDate = DateFormat('dd-MM-yyyy').parse(date);
+    return DateFormat(format).format(parsedDate);
+  } catch (e) {
+    return '';
   }
 }

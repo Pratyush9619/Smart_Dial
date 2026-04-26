@@ -157,7 +157,7 @@ class SummaryHeaderCard extends StatelessWidget {
 
 Widget _totalBadge(int total, String? duration) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
@@ -174,20 +174,20 @@ Widget _totalBadge(int total, String? duration) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(Icons.summarize, color: Colors.white, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              total.toString(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
+        // Row(
+        //   children: [
+        //     const Icon(Icons.summarize, color: Colors.white, size: 16),
+        //     const SizedBox(width: 6),
+        //     Text(
+        //       total.toString(),
+        //       style: const TextStyle(
+        //         color: Colors.white,
+        //         fontWeight: FontWeight.bold,
+        //         fontSize: 14,
+        //       ),
+        //     ),
+        //   ],
+        // ),
         duration!.isNotEmpty
             ? Row(
                 children: [
@@ -206,6 +206,4 @@ Widget _totalBadge(int total, String? duration) {
       ],
     ),
   );
-
-
 }

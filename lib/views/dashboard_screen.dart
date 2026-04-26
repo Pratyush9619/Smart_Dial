@@ -32,6 +32,7 @@ import 'package:smart_solutions/widget/loading_page.dart';
 import 'package:smart_solutions/widget/string.dart';
 import 'package:smart_solutions/widget/text_style.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import '../binding/active_file_binding.dart';
 import '../models/getGroupStatus.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -1102,12 +1103,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           : '0',
                                       statusColor: Colors.green,
                                       onPress: () {
-                                        Get.to(const ActiveFiles(
-                                          title: 'Active Files',
-                                          status: 1,
-                                          isShowBack: true,
-                                          isDrawer: false,
-                                        ));
+                                        Get.to(
+                                            const ActiveFiles(
+                                              title: 'Active Files',
+                                              status: 1,
+                                              isShowBack: true,
+                                              isDrawer: false,
+                                            ),
+                                            binding: ActiveFileBinding());
                                       },
                                     ),
                                   ),
@@ -1137,12 +1140,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           : '0',
                                       statusColor: Colors.red,
                                       onPress: () {
-                                        Get.to(const ActiveFiles(
-                                          title: 'InActive Files',
-                                          status: 2,
-                                          isShowBack: true,
-                                          isDrawer: false,
-                                        ));
+                                        Get.to(
+                                            const ActiveFiles(
+                                              title: 'InActive Files',
+                                              status: 2,
+                                              isShowBack: true,
+                                              isDrawer: false,
+                                            ),
+                                            binding: ActiveFileBinding());
                                       },
                                     ),
                                   ),

@@ -21,6 +21,7 @@ import 'package:smart_solutions/views/dialer_screen.dart';
 import 'package:smart_solutions/views/listing_screen.dart';
 import 'package:smart_solutions/views/login_request_screen.dart';
 import 'package:smart_solutions/views/login_screen.dart';
+import '../controllers/auth_controller.dart';
 import '../controllers/chartCard_controller.dart';
 import '../services/tab_state_service.dart';
 import 'dashboard_screen.dart';
@@ -259,8 +260,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         PersistentTabConfig(
-          screen: ActiveFiles(
-            key: const ValueKey('leads_screen'),
+          screen: const ActiveFiles(
+            key: ValueKey('leads_screen'),
             title: 'Leads',
             status: -1,
             isShowBack: false,
@@ -431,6 +432,8 @@ class _MainScreenState extends State<MainScreen> {
     Get.find<ActiveFilesController>().filterController.clearFilters();
     Get.find<ChartCardsController>().selectedIndex.value = 0;
     Get.find<CommonFilterController>().clearDateFilter();
+    Get.find<DataController>().fetchDataEntryList();
+    Get.find<AuthController>().handlePlanExpiry();
 
     handleWorkers(tab);
 

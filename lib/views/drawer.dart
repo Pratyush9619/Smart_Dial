@@ -4,19 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
-
 import 'package:smart_solutions/controllers/profile_controller.dart';
 import 'package:smart_solutions/views/followBackForm.dart';
 import 'package:smart_solutions/views/forget_password.dart';
 import 'package:smart_solutions/views/listing_screen.dart';
-import 'package:smart_solutions/views/login_request_screen.dart';
 import 'package:smart_solutions/views/theme_change_screen.dart';
-
 import '../controllers/theme_controller.dart';
 import '../services/logout_helper.dart';
-import 'hrms/hrm_screen.dart';
 import 'hrms/profile_screen.dart';
-import 'profile_view.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
@@ -81,7 +76,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         InkWell(
-                          onTap: () => Get.to(() => const ProfileScreen()),
+                          onTap: () => Get.to(() => ProfileScreen()),
                           child: CircleAvatar(
                             radius: screenHeight * 0.05, // responsive avatar
                             backgroundColor: Colors.white,
@@ -140,18 +135,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             ),
                           ),
                         ),
-                        if (StaticStoredData.roleName == 'telecaller')
-                          _drawerSvgTile(
-                            'assets/drawer/login_request.svg',
-                            'Login Request',
-                            () => Get.to(
-                              () => LoginRequestScreen(
-                                title: 'Login Request',
-                                isShowBack: true,
-                                isDrawer: false,
-                              ),
-                            ),
-                          ),
+                        // if (StaticStoredData.roleName == 'telecaller')
+                        //   _drawerSvgTile(
+                        //     'assets/drawer/login_request.svg',
+                        //     'Login Request',
+                        //     () => Get.to(
+                        //       () => LoginRequestScreen(
+                        //         title: 'Login Request',
+                        //         isShowBack: true,
+                        //         isDrawer: false,
+                        //       ),
+                        //     ),
+                        //   ),
+
                         // if (StaticStoredData.roleName == 'telecaller')
                         //   _drawerSvgTile(
                         //     'assets/drawer/about_us.svg',
@@ -164,12 +160,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         //   'Reset Password',
                         //   () => Get.to(() => const ForgetView()),
                         // ),
-                        if (StaticStoredData.roleName == 'telecaller')
-                          _drawerSvgTile(
-                            'assets/drawer/hrm.svg',
-                            'HRM',
-                            () => Get.to(() => const HrmScreen()),
-                          ),
+
+                        // if (StaticStoredData.roleName == 'telecaller')
+                        //   _drawerSvgTile(
+                        //     'assets/drawer/hrm.svg',
+                        //     'HRM',
+                        //     () => Get.to(() => const HrmScreen()),
+                        //   ),
                         // if (StaticStoredData.roleName == 'telecaller')
                         _drawerSvgTile(
                           'assets/drawer/theme.svg',
@@ -190,7 +187,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           () async {
                             // Show a quick confirmation dialog
 
-                            showLogoutDialog(context);
+                            showLogoutDialog(context,
+                                themeController: themeController);
 
                             // Get.defaultDialog(
                             //     title: "Logout",
@@ -327,7 +325,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 }
 
-void showLogoutDialog(BuildContext context) {
+void showLogoutDialog(BuildContext context,
+    {required ThemeController themeController}) {
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -350,11 +349,11 @@ void showLogoutDialog(BuildContext context) {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF1976D2).withOpacity(0.1),
+                  color: themeController.primaryColor.value.withOpacity(0.1),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.logout_rounded,
-                  color: Color(0xFF1976D2),
+                  color: themeController.primaryColor.value,
                   size: 32,
                 ),
               ),
@@ -389,17 +388,18 @@ void showLogoutDialog(BuildContext context) {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF1976D2)),
+                        side: BorderSide(
+                            color: themeController.primaryColor.value),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text(
+                      child: Text(
                         "Cancel",
                         style: TextStyle(
-                          color: Color(0xFF1976D2),
+                          color: themeController.primaryColor.value,
                         ),
                       ),
                     ),
@@ -411,7 +411,7 @@ void showLogoutDialog(BuildContext context) {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1976D2),
+                        backgroundColor: themeController.primaryColor.value,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

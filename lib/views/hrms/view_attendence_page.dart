@@ -319,10 +319,10 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
             const Divider(thickness: 6, color: (Color(0xFFE0E0E0))),
 
             // ---------- LOG IN / LOG OUT CARDS ----------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
-                children: const [
+                children: [
                   Expanded(child: LogCard(isLogin: true)),
                   SizedBox(width: 12),
                   Expanded(child: LogCard(isLogin: false)),

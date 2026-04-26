@@ -254,9 +254,13 @@ class DialerController extends GetxController {
     //  _timer?.cancel();
     logOutput("${customerName.value}:${phoneNumber.value}");
 
-    Get.to(() => const FollowBackForm(
-          isgetData: true,
-        ));
+    final role = StaticStoredData.roleName;
+
+    if (role == 'telecaller') {
+      Get.to(() => const FollowBackForm(isgetData: true));
+    }
+
+    // Get.to(() => const FollowBackForm(isgetData: true));
 
     // final callInfo = await CallStateService.getLastCallInfo();
 

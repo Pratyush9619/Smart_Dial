@@ -169,6 +169,14 @@ class LoginViewModel extends GetxController {
           //           ],
           //         ));
         }
+      } else if (response.statusCode == 402) {
+        showErrorDialog(
+          responseData['message'] ??
+              "Payment Required. Please contact support.",
+          onComplete: () {
+            // Optional: You can perform additional actions after the dialog is closed
+          },
+        );
       } else {
         Get.snackbar('Error', 'Invalid username or password',
             backgroundColor: Colors.red, colorText: Colors.white);
@@ -178,7 +186,7 @@ class LoginViewModel extends GetxController {
       logOutput("STACKTRACE: $stackTrace");
 
       showErrorDialog(
-        "An error occurred during login. Please try again.",
+        "An error occurred during login. Please contact your administrator.",
         onComplete: () {
           // Optional: You can perform additional actions after the dialog is closed
         },

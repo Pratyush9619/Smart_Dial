@@ -12,6 +12,8 @@ import 'package:smart_solutions/widget/summary_card.dart' show SummaryCard;
 import 'package:smart_solutions/widget/summary_header_card.dart';
 import 'package:smart_solutions/widget/text_style.dart';
 
+import '../../constants/static_stored_data.dart';
+
 class AdminCallBack extends StatefulWidget {
   final String title;
   const AdminCallBack({super.key, required this.title});
@@ -74,13 +76,20 @@ class _AdminCallBackState extends State<AdminCallBack> {
                         Obx(() {
                           final filterList = _followBackController.filters;
 
-                          return FilterChipList(
-                            filters: filterList,
-                            controller:
-                                _followBackController.filterScrollController,
-                            selectedIndex:
-                                _followBackController.selectedFilter.value,
-                            onSelected: _followBackController.selectFilter,
+                          final isAllowed =
+                              StaticStoredData.roleName != 'telecaller' &&
+                                  StaticStoredData.roleName != 'teamleader';
+
+                          return Visibility(
+                            visible: isAllowed,
+                            child: FilterChipList(
+                              filters: filterList,
+                              controller:
+                                  _followBackController.filterScrollController,
+                              selectedIndex:
+                                  _followBackController.selectedFilter.value,
+                              onSelected: _followBackController.selectFilter,
+                            ),
                           );
                         }),
                         kVerticalSpace(10),

@@ -222,7 +222,8 @@ class _DailyMonthlyCountState extends State<DailyMonthlyCount> {
       final total = today + monthly;
 
       return SummaryHeaderCard(
-        title: total,
+        title: 0,
+        duration: '',
         rows: [
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -278,7 +279,9 @@ class _DailyMonthlyCountState extends State<DailyMonthlyCount> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: SummaryCard(
-                imageUrl: item.profileImage.toString(),
+                imageUrl: item.profileImage?.isNotEmpty == true
+                    ? item.profileImage!
+                    : '',
                 title: item.name,
                 duration: '',
                 rows: [
@@ -485,9 +488,9 @@ class _DailyMonthlyCountState extends State<DailyMonthlyCount> {
     return Obx(() {
       final today = _adminCallBackController.logintodayTotal.value;
       final monthly = _adminCallBackController.loginmonthlyTotal.value;
-      final total = today + monthly;
+      // final total = today + monthly;
       return SummaryHeaderCard(
-        title: total,
+        title: 0,
         duration: '',
         rows: [
           Row(
@@ -577,7 +580,7 @@ class _DailyMonthlyCountState extends State<DailyMonthlyCount> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: SummaryCard(
-                imageUrl: item.profileImage.toString(),
+                imageUrl: item.profileImage ?? '',
                 title: item.name,
                 duration: '',
                 rows: [
@@ -760,7 +763,6 @@ Widget _summaryStat({
     ),
   );
 }
-
 
 // Widget buildTotalSummary({
 //   required String title,

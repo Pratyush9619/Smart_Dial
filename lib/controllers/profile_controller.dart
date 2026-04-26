@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
 import '../constants/api_urls.dart';
 import '../constants/services.dart';
 import '../services/api_service.dart';
+
 class ProfileController extends GetxController {
-  
   var imageFile = Rx<File?>(null);
 
   final nameController = TextEditingController();
@@ -16,6 +17,7 @@ class ProfileController extends GetxController {
 
   var isLoading = false.obs;
   var profileImageUrl = "".obs;
+  final ImagePicker picker = ImagePicker();
 
   @override
   void onInit() {
@@ -29,45 +31,52 @@ class ProfileController extends GetxController {
     Get.bottomSheet(
       Container(
         color: Colors.white,
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
-              onTap: () async {
-                final pickedFile =
-                    await picker.pickImage(source: ImageSource.gallery);
+        child: SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Gallery'),
+                  onTap: () async {
+                    Get.back(); // ✅ close bottom sheet first
 
-                if (pickedFile != null) {
-                  imageFile.value = File(pickedFile.path);
+                    await Future.delayed(const Duration(milliseconds: 300));
 
-                  Get.back();
-                  // ✅ AUTO SAVE AFTER SELECT
-                  await saveProfile();
-                } else {
-                  Get.back();
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
-              onTap: () async {
-                final pickedFile =
-                    await picker.pickImage(source: ImageSource.camera);
+                    try {
+                      final XFile? pickedFile =
+                          await picker.pickImage(source: ImageSource.gallery);
 
-                if (pickedFile != null) {
-                  imageFile.value = File(pickedFile.path);
+                      if (pickedFile != null) {
+                        imageFile.value = File(pickedFile.path);
+                        await saveProfile();
+                      }
+                    } catch (e) {
+                      Get.snackbar('Error', 'Unable to open gallery');
+                    }
+                  }),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () async {
+                  Get.back(); // close sheet safely
+                  await Future.delayed(const Duration(milliseconds: 200));
+                  await pickImageFromGallery();
+                  //   final pickedFile =
+                  //       await picker.pickImage(source: ImageSource.camera);
 
-                  Get.back(); // Close the bottom sheet before saving
-                  // ✅ AUTO SAVE AFTER SELECT
-                  await saveProfile();
-                } else {
-                  Get.back();
-                }
-              },
-            ),
-          ],
+                  //   if (pickedFile != null) {
+                  //     imageFile.value = File(pickedFile.path);
+
+                  //     Get.back(); // Close the bottom sheet before saving
+                  //     // ✅ AUTO SAVE AFTER SELECT
+                  //     await saveProfile();
+                  //   } else {
+                  //     Get.back();
+                  //   }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -114,7 +123,6 @@ class ProfileController extends GetxController {
         );
 
         await getProfileData(StaticStoredData.userId);
-
 
         //   Get.offAllNamed(AppRoutes.home);
       } else {
@@ -165,6 +173,26 @@ class ProfileController extends GetxController {
       logOutput("Fetch error: $e");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> pickImageFromGallery() async {
+    try {
+      final status = await Permission.photos.request();
+
+      if (!status.isGranted) {
+        Get.snackbar('Permission Required', 'Please allow gallery access');
+        return;
+      }
+
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        imageFile.value = File(pickedFile.path);
+        await saveProfile();
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Unable to open gallery');
     }
   }
 

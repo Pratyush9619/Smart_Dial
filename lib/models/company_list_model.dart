@@ -59,7 +59,6 @@ class CompanyData {
         category: json["category"]!,
         dataType: json["data_type"],
         created: json["created"],
-        dsaName: json["dsa_name"]!,
         address: json["address"],
         gstin: json["gstin"],
       );

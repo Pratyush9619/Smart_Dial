@@ -14,6 +14,7 @@ import 'package:smart_solutions/controllers/follow_form_controller.dart';
 import 'package:smart_solutions/controllers/login_request_controller.dart';
 import 'package:smart_solutions/controllers/profile_controller.dart';
 
+import '../controllers/auth_controller.dart';
 import '../services/tab_state_service.dart';
 
 class AppBinding extends Bindings {
@@ -34,6 +35,7 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => DisbursementDetailsController(), fenix: true);
     Get.lazyPut(() => DisbursementDetailsController(), fenix: true);
     Get.lazyPut(() => ChartCardsController());
+    Get.lazyPut(() => AuthController(), fenix: true);
 
     if (StaticStoredData.roleName != 'telecaller') {
       Get.lazyPut(() => AdminCallLogController(), fenix: true);

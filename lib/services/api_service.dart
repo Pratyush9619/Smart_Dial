@@ -23,6 +23,10 @@ class ApiService {
         "x-api-key": APIUrls.apiKey,
       },
     );
+
+    print(
+        "full url -->>> ${companyName == null ? APIUrls.baseUrl : "${APIUrls.newBaseUrl}$companyName/api/index.php/"}$endpoint");
+
     return response;
   }
 

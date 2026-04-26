@@ -63,6 +63,7 @@ class _DialerScreenState extends State<DialerScreen> {
       isDrawer: true,
       body: SingleChildScrollView(
         child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -170,7 +171,6 @@ class _DialerScreenState extends State<DialerScreen> {
                           textAlign: TextAlign.center,
                           readOnly: true,
                           maxLength: 10,
-
                           enableInteractiveSelection:
                               true, // ✅ enables copy/paste
                           showCursor: true, // optional (clean UI)
@@ -204,34 +204,57 @@ class _DialerScreenState extends State<DialerScreen> {
                       ),
                     ),
 
-                    dialerController.customerName.isNotEmpty
-                        ? Obx(
-                            () => Container(
-                              height: 40,
-                              width: double.infinity,
-                              // color: themeColor.AppColors.diallerContainerColor,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: Visibility(
-                                visible: dialerController.customerName.isEmpty,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    CommonRows().buildSingleRowNoExpand(
-                                        'assets/images/user_circle.svg',
-                                        dialerController.customerName.value),
-                                    Text(
-                                        CurrencyUtils.formatIndianCurrency(
-                                            dialerController
-                                                .customerLoan.value),
-                                        style: AppTextStyle.headerTitle),
-                                  ],
-                                ),
-                              ),
+                    if (dialerController.customerName.value.isNotEmpty)
+                      Container(
+                        height: 40,
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            CommonRows().buildSingleRowNoExpand(
+                              'assets/images/user_circle.svg',
+                              dialerController.customerName.value,
+                              themeController.primaryColor.value,
                             ),
-                          )
-                        : const SizedBox.shrink()
+                            Text(
+                              CurrencyUtils.formatIndianCurrency(
+                                ' ${dialerController.customerLoan.value}',
+                              ),
+                              style: AppTextStyle.headerTitle,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // dialerController.customerName.isNotEmpty
+                    //     ? Obx(() {
+                    //         if (dialerController.customerName.value.isEmpty) {
+                    //           return const SizedBox.shrink();
+                    //         }
+
+                    //         return Container(
+                    //           height: 40,
+                    //           width: double.infinity,
+                    //           // color: themeColor.AppColors.diallerContainerColor,
+                    //           padding:
+                    //               const EdgeInsets.symmetric(horizontal: 8),
+                    //           child: Row(
+                    //             mainAxisAlignment:
+                    //                 MainAxisAlignment.spaceBetween,
+                    //             children: [
+                    //               CommonRows().buildSingleRowNoExpand(
+                    //                   'assets/images/user_circle.svg',
+                    //                   dialerController.customerName.value),
+                    //               Text(
+                    //                   CurrencyUtils.formatIndianCurrency(
+                    //                       dialerController.customerLoan.value),
+                    //                   style: AppTextStyle.headerTitle),
+                    //             ],
+                    //           ),
+                    //         );
+                    //       })
+                    //     : const SizedBox.shrink()
 
                     //  const Divider(color: AppColors.secondaryColor)
                   ],
@@ -295,30 +318,35 @@ class _DialerScreenState extends State<DialerScreen> {
 
               // Keypad
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 40.w),
-                child: Column(
-                  children: [
-                    KeypadRowWidget(
-                      numbers: const ['1', '2', '3'],
-                      subTexts: const ['', 'ABC', 'DEF'],
-                      onDialButtonPressed: _addNumber,
-                    ),
-                    KeypadRowWidget(
-                      numbers: const ['4', '5', '6'],
-                      subTexts: const ['GHI', 'JKL', 'MNO'],
-                      onDialButtonPressed: _addNumber,
-                    ),
-                    KeypadRowWidget(
-                      numbers: const ['7', '8', '9'],
-                      subTexts: const ['PQRS', 'TUV', 'WXYZ'],
-                      onDialButtonPressed: _addNumber,
-                    ),
-                    KeypadRowWidget(
-                      numbers: const ['*', '0', '#'],
-                      subTexts: const [null, '+', null],
-                      onDialButtonPressed: _addNumber,
-                    ),
-                  ],
+                padding: EdgeInsets.symmetric(horizontal: 30.w),
+                child: AspectRatio(
+                  aspectRatio: 0.9,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      KeypadRowWidget(
+                        numbers: const ['1', '2', '3'],
+                        subTexts: const ['', 'ABC', 'DEF'],
+                        onDialButtonPressed: _addNumber,
+                      ),
+                      KeypadRowWidget(
+                        numbers: const ['4', '5', '6'],
+                        subTexts: const ['GHI', 'JKL', 'MNO'],
+                        onDialButtonPressed: _addNumber,
+                      ),
+                      KeypadRowWidget(
+                        numbers: const ['7', '8', '9'],
+                        subTexts: const ['PQRS', 'TUV', 'WXYZ'],
+                        onDialButtonPressed: _addNumber,
+                      ),
+                      KeypadRowWidget(
+                        numbers: const ['*', '0', '#'],
+                        subTexts: const [null, '+', null],
+                        onDialButtonPressed: _addNumber,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 

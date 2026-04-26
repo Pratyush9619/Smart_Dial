@@ -104,7 +104,7 @@ class NotificationController extends GetxController {
         }
 
         // ⭐ Refresh RxList UI
-        notificationData.refresh();
+        //    notificationData.refresh();
 
         // ⭐ Update count
         unreadCount.value = 0;

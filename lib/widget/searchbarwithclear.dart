@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:smart_solutions/controllers/common_filter_controller.dart';
 import 'package:smart_solutions/theme/app_theme.dart';
 
+import '../controllers/theme_controller.dart';
+
 class SearchBarWithClear extends StatefulWidget {
   final TextEditingController controller;
   final VoidCallback onClear;
@@ -45,6 +47,8 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
 
   final CommonFilterController _commonFilterController =
       Get.find<CommonFilterController>();
+
+  final ThemeController _themeController = Get.find<ThemeController>();
 
   @override
   void initState() {
@@ -111,10 +115,14 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
       child: Row(
         children: [
           Expanded(
-            child: Obx(
-              () => SizedBox(
+            child: Obx(() {
+              final isSelected =
+                  _commonFilterController.isDateRangeSelected.value;
+              final primaryColor = _themeController.primaryColor.value;
+
+              return SizedBox(
                 height: 40,
-                child: _commonFilterController.isDateRangeSelected.value
+                child: isSelected
                     ? Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
@@ -131,7 +139,7 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
                                 Icon(
                                   Icons.calendar_today,
                                   size: 20,
-                                  color: Theme.of(context).primaryColor,
+                                  color: primaryColor,
                                 ),
                                 SizedBox(width: 8.w),
                                 Text(
@@ -233,8 +241,8 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
                           ),
                         ),
                       ),
-              ),
-            ),
+              );
+            }),
           ),
           if (widget.showDatePickerIcon) ...[
             SizedBox(width: 10.w),

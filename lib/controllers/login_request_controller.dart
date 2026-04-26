@@ -13,6 +13,7 @@ import 'package:smart_solutions/models/remark_list.dart';
 import 'package:smart_solutions/models/source_model.dart';
 import 'package:smart_solutions/services/api_service.dart';
 import '../constants/services.dart';
+import '../models/status_list_model.dart';
 
 class LoginRequestController extends GetxController {
   var allLoginRequestList = <LoginRequest>[].obs;
@@ -34,6 +35,7 @@ class LoginRequestController extends GetxController {
   var contactNumber = ''.obs;
   var loanStatus = '1'.obs; // Default loan status
   var bankId = ''.obs;
+  var sendingBankId = ''.obs;
   var loanAmount = ''.obs;
   var commonRemark = ''.obs;
   var remarksList = <String>[].obs;
@@ -49,6 +51,11 @@ class LoginRequestController extends GetxController {
   var filters = <String>[].obs;
   RxList<dynamic> todayCount = <dynamic>[].obs;
   RxList<dynamic> monthlyCount = <dynamic>[].obs;
+
+  var selectedLoanStatus = ''.obs;
+  var selectedStatus = ''.obs;
+  var statuslist = <statusData>[].obs;
+  var selectedStatusName = ''.obs;
 
   final CommonFilterController filterController =
       Get.find<CommonFilterController>();
@@ -84,9 +91,7 @@ class LoginRequestController extends GetxController {
   Future<void> getLoginRequestList() async {
     try {
       isLoading(true);
-      var body = {
-        'telecaller_id': StaticStoredData.userId
-      }; // Replace with actual data if required
+      var body = {'telecaller_id': StaticStoredData.userId};
 
       final response =
           await ApiService().postRequest(APIUrls.loginRequestList, body);
@@ -97,7 +102,6 @@ class LoginRequestController extends GetxController {
           final List list = resData['data'];
 
           final loginData = list.map((e) => LoginRequest.fromJson(e)).toList();
-
           allLoginRequestList.assignAll(loginData);
           loginRequestList.assignAll(loginData);
 
@@ -220,11 +224,11 @@ class LoginRequestController extends GetxController {
       var fields = {
         'login_request_date': DateFormat('yyyy-MM-dd HH:mm')
             .format(DateTime.parse(loginRequestDate.value.toString())),
+        'loan_status': selectedLoanStatus.value,
         'telecaller_id': telecallerId.value.toString(),
         'customer_name': customerName.value.toString(),
         'contact_number': contactNumber.value.toString(),
-        'loan_status': "NA",
-        'bank_id': bankId.value.toString(),
+        'bank_id': sendingBankId.value.toString(),
         'loan_amount': loanAmount.value.replaceAll(",", ""),
         'common_remark': commonRemark.value.toString(),
         'id': currentId.value.toString(),
@@ -251,15 +255,17 @@ class LoginRequestController extends GetxController {
 
       // Handle the response
       if (response.statusCode == 200) {
+        Get.back(); // Close the form
         await getLoginRequestList();
         currentId.value = '';
 
         loginRequestDate = DateTime.now().obs;
-        telecallerId = StaticStoredData.userId.obs;
+        telecallerId.value = '';
         customerName.value = '';
         contactNumber.value = '';
-        loanStatus.value = '1'; // Default loan status
+        selectedLoanStatus.value = ''; // Default loan status
         bankId.value = '';
+        sendingBankId.value = '';
         loanAmount.value = '';
         commonRemark.value = '';
         remarksList.value = []; // To hold multiple remarks
@@ -322,6 +328,24 @@ class LoginRequestController extends GetxController {
     } catch (e) {
       log('An error occurred while fetching source list: $e');
       isLoading(false); // Ensure loading is set to false on error as well
+    }
+  }
+
+  Future<void> getStatusData() async {
+    try {
+      Map<String, dynamic> data = {};
+      var response = await ApiService().postRequest(APIUrls.statuslist, data);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = json.decode(response.body)['data'];
+        final List<statusData> data =
+            responseData.map((e) => statusData.fromJson(e)).toList();
+        if (data.isNotEmpty) {
+          statuslist.assignAll(data);
+        }
+      }
+    } catch (e) {
+      logOutput('An error occurred while fetching source list: $e');
     }
   }
 

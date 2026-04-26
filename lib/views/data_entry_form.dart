@@ -9,6 +9,7 @@ import 'package:smart_solutions/utils/currency_util.dart';
 import 'package:smart_solutions/widget/common_scaffold.dart';
 import 'package:smart_solutions/widget/loading_page.dart';
 import '../constants/services.dart';
+import '../controllers/login_request_controller.dart';
 import '../controllers/theme_controller.dart';
 
 class DataEntryForm extends StatefulWidget {
@@ -34,6 +35,8 @@ class _DataEntryFormState extends State<DataEntryForm> {
   final _formKey = GlobalKey<FormState>();
 
   final ThemeController themeController = Get.find<ThemeController>();
+  final LoginRequestController _loginRequestController =
+      Get.find<LoginRequestController>();
   @override
   void initState() {
     super.initState();
@@ -62,16 +65,25 @@ class _DataEntryFormState extends State<DataEntryForm> {
     controller.tellecallerId.value = widget.tellecallerId ?? '';
     controller.dataId.value = widget.id ?? '';
     controller.dsaId.value = widget.dsaId ?? '';
+    controller.loginRequestId.value = widget.id ?? '';
     if (widget.isMovetoLogin == true) {
       await controller.fetchmoveToLoginData(widget.id.toString());
     } else {
       await controller.fetchDataEntryListSpecificId();
     }
     controller.getSourcingList();
-    controller.getDsaBankList(widget.dsaId ?? '');
-    controller.getBankerNameByloginBank(
-        widget.dsaId.toString(), controller.selectedBankName.toString());
-    // controller.getBankerDetailsName(widget.bankerId ?? '');
+
+    if (!widget.isMovetoLogin) {
+      controller.getDsaBankList(widget.dsaId ?? '');
+    }
+    if (!widget.isMovetoLogin) {
+      controller.getBankerNameByloginBank(
+          widget.dsaId.toString(), controller.selectedBankName.value);
+    }
+    if (widget.isMovetoLogin) {
+      controller.getBankerDetailsName(widget.bankerId ?? '');
+    }
+
     controller.getMobileByCustomerData(controller.contactNumber.value);
     controller.getTeamLeadById(widget.tellecallerId.toString());
   }
@@ -85,26 +97,92 @@ class _DataEntryFormState extends State<DataEntryForm> {
     DropdownMenuItem(value: 'Open', child: Text('Open')),
     DropdownMenuItem(value: 'Closed', child: Text('Closed')),
   ];
+
+  final _scrollController = ScrollController();
+
+  final GlobalKey _nameKey = GlobalKey();
+  final GlobalKey _emailKey = GlobalKey();
+
+  void _scrollToFirstError() {
+    final fields = [_nameKey, _emailKey];
+
+    for (final key in fields) {
+      final context = key.currentContext;
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+        break;
+      }
+    }
+  }
+
+  void _clearForm(DataController controller) {
+    controller.dsaName.value = '';
+    controller.date.value = '';
+    controller.contactNumber.value = '';
+    controller.customerName.value = '';
+    controller.income.value = '';
+    controller.companyName.value = '';
+    controller.loanAmountController.text = '';
+    controller.dob.value = '';
+    controller.selectedStatus.value = '';
+    controller.selectedCaseType.value = '';
+    controller.selectedproductType.value = '';
+    controller.selectedBankerName.value = '';
+    controller.bankName.value = '';
+    controller.bankerMobile.value = '';
+    controller.bankerEmail.value = '';
+    controller.losNo.value = '';
+    controller.telecaller.value = '';
+    controller.status.value = '';
+    controller.source.value = '';
+    controller.caseStudy.value = '';
+    controller.comments.value = '';
+    controller.teamleader.value = '';
+    controller.selectedBanktransactionType.value = '';
+    controller.selectedDemandDraftStatus.value = '';
+    controller.selectedDsaId.value = '';
+
+    controller.commentList.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
-        canPop: false, // ❗ Prevent auto pop
+        canPop: false, // prevent automatic pop
         onPopInvoked: (didPop) async {
           if (didPop) return;
 
           final shouldPop = await showDialog<bool>(
-            context: Get.context!,
-            builder: (context) {
+            context: context, // ❗ use page context, NOT Get.context
+            barrierDismissible: false, // ✅ IMPORTANT
+            builder: (dialogContext) {
               return AlertDialog(
                 title: const Text('Confirm'),
                 content: const Text('Are you sure you want to go back?'),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context, false),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      backgroundColor:
+                          themeController.primaryColor.value.withOpacity(0.1),
+                    ),
+                    onPressed: () => Navigator.pop(dialogContext, false),
                     child: const Text('Cancel'),
                   ),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: themeController.primaryColor.value,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(dialogContext, true);
+
+                      // await controller.fetchDataEntryListSpecificId();
+                    },
                     child: const Text('Yes'),
                   ),
                 ],
@@ -113,33 +191,71 @@ class _DataEntryFormState extends State<DataEntryForm> {
           );
 
           if (shouldPop == true) {
-            /// ✅ CLEAR DATA
-            controller.dsaName.value = '';
-            controller.date.value = '';
-            controller.contactNumber.value = '';
-            controller.customerName.value = '';
-            controller.income.value = '';
-            controller.companyName.value = '';
-            controller.loanAmountController.text = '';
-            controller.dob.value = '';
-            controller.selectedStatus.value = '';
-            controller.selectedCaseType.value = '';
-            controller.selectedproductType.value = '';
-            controller.bankName.value = '';
-            controller.bankerMobile.value = '';
-            controller.bankerEmail.value = '';
-            controller.losNo.value = '';
-            controller.telecaller.value = '';
-            controller.status.value = '';
-            controller.source.value = '';
-            controller.caseStudy.value = '';
-            controller.comments.value = '';
-            controller.teamleader.value = '';
+            controller.fetchDataEntryList();
 
-            /// ✅ GO BACK
-            Navigator.pop(context);
+            _clearForm(controller);
+
+            // ✅ MANUALLY POP THE PAGE
+            Navigator.of(context).pop();
           }
         },
+
+        //  PopScope(
+        //     canPop: false, // ❗ Prevent auto pop
+        //     onPopInvoked: (didPop) async {
+        //       if (didPop) return;
+
+        //       final shouldPop = await showDialog<bool>(
+        //         context: Get.context!,
+        //         builder: (context) {
+        //           return AlertDialog(
+        //             title: const Text('Confirm'),
+        //             content: const Text('Are you sure you want to go back?'),
+        //             actions: [
+        //               TextButton(
+        //                 onPressed: () => Navigator.pop(context, false),
+        //                 child: const Text('Cancel'),
+        //               ),
+        //               ElevatedButton(
+        //                 onPressed: () => Navigator.pop(context, true),
+        //                 child: const Text('Yes'),
+        //               ),
+        //             ],
+        //           );
+        //         },
+        //       );
+
+        //       if (shouldPop == true) {
+        //         controller.dsaName.value = '';
+        //         controller.date.value = '';
+        //         controller.contactNumber.value = '';
+        //         controller.customerName.value = '';
+        //         controller.income.value = '';
+        //         controller.companyName.value = '';
+        //         controller.loanAmountController.text = '';
+        //         controller.dob.value = '';
+        //         controller.selectedStatus.value = '';
+        //         controller.selectedCaseType.value = '';
+        //         controller.selectedproductType.value = '';
+        //         controller.selectedBankerName.value = '';
+        //         controller.bankName.value = '';
+        //         controller.bankerMobile.value = '';
+        //         controller.bankerEmail.value = '';
+        //         controller.losNo.value = '';
+        //         controller.telecaller.value = '';
+        //         controller.status.value = '';
+        //         controller.source.value = '';
+        //         controller.caseStudy.value = '';
+        //         controller.comments.value = '';
+        //         controller.teamleader.value = '';
+        //         controller.selectedBanktransactionType.value = '';
+        //         controller.selectedDemandDraftStatus.value = '';
+        //         controller.commentList.clear();
+
+        //         /// ✅ GO BACK
+        //         Navigator.pop(context);
+        //       }
+        //     },
 
         //  PopScope(
         //     onPopInvoked: (didPop) {
@@ -217,6 +333,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -231,6 +348,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                           _buildTextField(
                             controller: controller.mobileController,
                             label: 'Mobile Number',
+                            readOnly: true,
                             prefixIcon: SvgPicture.asset(
                               'assets/images/phone.svg',
                               color: themeController.primaryColor.value,
@@ -261,20 +379,21 @@ class _DataEntryFormState extends State<DataEntryForm> {
                             ),
                           ),
 
-                          _buildTextField(
-                            controller: controller.dobController,
-                            content: controller
-                                .formatDate(controller.dob.value, 'dd-MM-yyyy')
-                                .obs,
-                            prefixIcon: SvgPicture.asset(
-                              'assets/images/dob.svg',
-                              color: themeController.primaryColor.value,
-                              height: 20,
-                              width: 20,
+                          Obx(
+                            () => _buildTextField(
+                              controller: controller.dobController,
+                              content: controller.dob,
+                              prefixIcon: SvgPicture.asset(
+                                'assets/images/dob.svg',
+                                color: themeController.primaryColor.value,
+                                height: 20,
+                                width: 20,
+                              ),
+                              label: 'DOB',
+                              //   validator: (value) => _validateNotEmpty(value),
+                              onChanged: (value) =>
+                                  controller.dob.value = value,
                             ),
-                            label: 'DOB',
-                            //   validator: (value) => _validateNotEmpty(value),
-                            onChanged: (value) => controller.dob.value = value,
                           ),
                           _buildTextField(
                             controller: controller.companyController,
@@ -332,6 +451,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                           _buildTextField(
                             controller: controller.teamleaderController,
                             label: 'Team Leader',
+                            readOnly: true,
                             prefixIcon: SvgPicture.asset(
                               'assets/images/teamleader.svg',
                               height: 20,
@@ -358,6 +478,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                             () => buildCommonDropdown(
                               hint: 'Balance Transfer',
                               items: yesNoItems,
+                              isEnabled: controller.isEdit.value,
                               iconPath: 'assets/images/teamleader.svg',
                               value: controller
                                       .selectedBanktransactionType.value.isEmpty
@@ -393,9 +514,10 @@ class _DataEntryFormState extends State<DataEntryForm> {
                                   : controller.selectedDemandDraftStatus.value,
 
                               // 🔥 Disable when Balance Transfer = NO
-                              isEnabled: controller
-                                      .selectedBanktransactionType.value ==
-                                  'Yes',
+                              isEnabled: controller.isEdit.value &&
+                                  controller
+                                          .selectedBanktransactionType.value ==
+                                      'Yes',
 
                               onChanged: (newValue) {
                                 if (newValue != null) {
@@ -448,9 +570,12 @@ class _DataEntryFormState extends State<DataEntryForm> {
                               onChanged: (value) =>
                                   controller.bankerEmail.value = value),
 
-                          buildLoanAmountField(
-                            controller: controller.loanAmountController,
-                            value: controller.loanAmount,
+                          Obx(
+                            () => buildLoanAmountField(
+                              controller: controller.loanAmountController,
+                              value: controller.loanAmount,
+                              isEnabled: controller.isEdit.value,
+                            ),
                           ),
 
                           // _buildTextField(
@@ -525,10 +650,9 @@ class _DataEntryFormState extends State<DataEntryForm> {
                             controller: controller.caseStudyController,
                             label: 'Case Study ',
                             content: controller.caseStudy,
-
                             onChanged: (value) =>
                                 controller.caseStudy.value = value,
-                            // validator: _validateNotEmpty,
+                            validator: _validateNotEmpty,
                           ),
 
                           Obx(
@@ -557,6 +681,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                                               content:
                                                   (comment.comment ?? '').obs,
                                               label: 'Comment',
+                                              focusNode: comment.focusNode,
                                               onChanged: (value) {
                                                 comment.comment = value;
                                               },
@@ -605,6 +730,11 @@ class _DataEntryFormState extends State<DataEntryForm> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    themeController.primaryColor.value,
+                                minimumSize: const Size(120, 40),
+                              ),
                               onPressed: controller.addComment,
                               child: const Text('Add Comment'),
                             ),
@@ -653,6 +783,8 @@ class _DataEntryFormState extends State<DataEntryForm> {
                           Center(
                             child: Obx(() => ElevatedButton(
                                   style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        themeController.primaryColor.value,
                                     minimumSize: const Size(120, 45),
                                   ),
                                   onPressed: controller.isDataEntryLoading.value
@@ -666,6 +798,9 @@ class _DataEntryFormState extends State<DataEntryForm> {
                                             if (!mounted) return;
 
                                             if (success) {
+                                              _loginRequestController
+                                                  .getLoginRequestList();
+
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
                                                 const SnackBar(
@@ -675,7 +810,22 @@ class _DataEntryFormState extends State<DataEntryForm> {
                                                 ),
                                               );
 
-                                              Navigator.pop(context); // ✅ SAFE
+                                              Navigator.pop(context);
+
+                                              controller.fetchDataEntryList();
+                                              // _loginRequestController
+                                              //     .getLoginRequestList();
+                                              // ScaffoldMessenger.of(context)
+                                              //     .showSnackBar(
+                                              //   const SnackBar(
+                                              //     content: Text(
+                                              //         'Data Entry saved successfully!'),
+                                              //     backgroundColor: Colors.green,
+                                              //   ),
+                                              // );
+
+                                              // Navigator.pop(context); // ✅ SAFE
+                                              // controller.fetchDataEntryList();
                                             } else {
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
@@ -686,6 +836,8 @@ class _DataEntryFormState extends State<DataEntryForm> {
                                                 ),
                                               );
                                             }
+                                          } else {
+                                            _scrollToFirstError();
                                           }
                                         },
                                   child: controller.isSaveLoading.value
@@ -748,7 +900,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
 
   Widget _buildTextField({
     required TextEditingController controller, // ✅ MUST
-
+    FocusNode? focusNode, // ✅ ADD THIS
     required RxString content,
     required String label,
     ValueChanged<String>? onChanged,
@@ -756,6 +908,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
     bool formatAsCurrency = false,
+    bool readOnly = false,
   }) {
     Widget? decoratedPrefixIcon;
 
@@ -786,8 +939,8 @@ class _DataEntryFormState extends State<DataEntryForm> {
             controller: controller,
             keyboardType: inputType,
             maxLines: null,
-            readOnly: !this.controller.isEdit.value,
-
+            readOnly: readOnly ? true : !this.controller.isEdit.value,
+            focusNode: focusNode,
             decoration: InputDecoration(
               prefixIcon: decoratedPrefixIcon,
               hintText: "Enter $label",
@@ -928,6 +1081,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
   Widget buildLoanAmountField({
     required TextEditingController controller,
     required RxString value,
+    required isEnabled,
   }) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -938,7 +1092,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
           TextFormField(
             controller: controller,
             keyboardType: TextInputType.number,
-
+            readOnly: !isEnabled,
             decoration: InputDecoration(
               prefixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -947,6 +1101,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                     padding: const EdgeInsets.only(left: 10.0, right: 8.0),
                     child: SvgPicture.asset(
                       'assets/images/rupees.svg',
+                      color: themeController.primaryColor.value,
                       height: 20,
                       width: 20,
                     ),
@@ -1116,7 +1271,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
   //   });
   // }
 
-  // // Dynamic Remarks Section
+  // Dynamic Remarks Section
   String? _validateNotEmpty(String? value) {
     if (value == null || value.isEmpty) {
       return 'This field cannot be empty';
@@ -1608,9 +1763,14 @@ class _DataEntryFormState extends State<DataEntryForm> {
                   ? (newValue) {
                       if (newValue != null) {
                         controller.selectedBankName.value = newValue;
+                        // ✅ Find bankId using bankName
+                        // final selectedBank = controller.dsaBankList.firstWhere(
+                        //   (e) => e.bankName == newValue,
+                        // );
                         controller.getBankerNameByloginBank(
                             controller.selectedDsaId.toString(),
-                            controller.selectedBankName.toString());
+                            controller.selectedBankName.value);
+                        //  selectedBank.bankId.toString());
                       }
                     }
                   : null,
@@ -1687,6 +1847,11 @@ class _DataEntryFormState extends State<DataEntryForm> {
               onChanged: controller.isEdit.value
                   ? (newValue) {
                       if (newValue != null) {
+                        controller.selectedBankerName.value = controller
+                            .bankerNameList
+                            .firstWhere((e) => e.id.toString() == newValue)
+                            .bankerName;
+
                         controller.bankName.value = newValue;
                         controller.getBankerDetailsName(newValue.toString());
                       }
@@ -1712,7 +1877,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
     required Function(String?)? onChanged,
     required String iconPath,
     String? Function(String?)? validator,
-    bool isEnabled = true,
+    bool isEnabled = false,
   }) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -1844,13 +2009,15 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 style: TextStyle(color: Colors.grey),
               ),
               items: _buildTellecallerNameDropdownItems(),
-              onChanged: controller.isEdit.value
-                  ? (newValue) {
-                      if (newValue != null) {
-                        controller.telecaller.value = newValue;
-                      }
-                    }
-                  : null,
+              onChanged: null,
+              //  controller.isEdit.value
+              //     ? (newValue) {
+              //         if (newValue != null) {
+              //           controller.tellecallerId.value = newValue;
+              //           controller.getTeamLeadById(controller.telecaller.value);
+              //         }
+              //       }
+              //     : null,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please select a Tellecaller';
@@ -1927,7 +2094,11 @@ class _DataEntryFormState extends State<DataEntryForm> {
               onChanged: controller.isEdit.value
                   ? (newValue) {
                       if (newValue != null) {
-                        controller.status.value = newValue;
+                        final selected = controller.statuslist
+                            .firstWhere((e) => e.id == newValue);
+
+                        controller.selectedStatusName.value =
+                            selected.dataEntryStatus;
                       }
                     }
                   : null,
@@ -2057,7 +2228,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
 
   String? _getInitialloginBankValue() {
     final existing = controller.dsaBankList.firstWhereOrNull((e) =>
-        (e.bankId)?.toLowerCase().trim() ==
+        (e.bankName).toLowerCase().trim() ==
         controller.selectedBankName.value.toLowerCase().trim());
     return existing?.bankName;
   }
