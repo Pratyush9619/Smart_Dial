@@ -178,23 +178,91 @@ class ProfileController extends GetxController {
 
   Future<void> pickImageFromGallery() async {
     try {
-      final status = await Permission.photos.request();
+      PermissionStatus status;
 
+      // ✅ Android permission handling
+      if (Platform.isAndroid) {
+        status = await Permission.photos.request();
+
+        // Android < 13 fallback
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+      } else {
+        status = await Permission.photos.request();
+      }
+
+      // ❌ Permission denied
       if (!status.isGranted) {
-        Get.snackbar('Permission Required', 'Please allow gallery access');
+        Get.snackbar(
+          'Permission Required',
+          'Gallery permission denied\nStatus: $status',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange.shade700,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 6),
+        );
         return;
       }
 
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      // ✅ Open gallery
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
 
-      if (pickedFile != null) {
-        imageFile.value = File(pickedFile.path);
-        await saveProfile();
+      // ❌ User cancelled picker
+      if (pickedFile == null) {
+        Get.snackbar(
+          'Cancelled',
+          'No image selected',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
       }
-    } catch (e) {
-      Get.snackbar('Error', 'Unable to open gallery');
+
+      // ✅ Set image
+      imageFile.value = File(pickedFile.path);
+
+      // ✅ Save profile / upload
+      await saveProfile();
+    } catch (e, stackTrace) {
+      // 🧪 Debug logs
+      debugPrint('Gallery Error: $e');
+      debugPrint('StackTrace: $stackTrace');
+
+      // 🚨 Visible error for tester/user
+      Get.snackbar(
+        'Gallery Error (${e.runtimeType})',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 10),
+        margin: const EdgeInsets.all(12),
+        isDismissible: true,
+      );
     }
   }
+  // Future<void> pickImageFromGallery() async {
+  //   try {
+  //     final status = await Permission.photos.request();
+
+  //     if (!status.isGranted) {
+  //       Get.snackbar('Permission Required', 'Please allow gallery access');
+  //       return;
+  //     }
+
+  //     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+  //     if (pickedFile != null) {
+  //       imageFile.value = File(pickedFile.path);
+  //       await saveProfile();
+  //     }
+  //   } catch (e) {
+  //     Get.snackbar('Error', 'Unable to open gallery');
+  //   }
+  // }
 
   @override
   void onClose() {

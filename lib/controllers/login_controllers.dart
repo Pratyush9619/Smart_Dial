@@ -25,10 +25,13 @@ class LoginViewModel extends GetxController {
   void login(String tokenData) async {
     isLoading.value = true;
 
+    StaticStoredData.deviceId = await Services.getDeviceId();
+
     Map<String, dynamic> loginData = {
       'username': usernameController.text.trim(),
       'password': passwordController.text.trim(),
-      'data_type': "${secureType.value}"
+      'data_type': "${secureType.value}",
+      'userimei': StaticStoredData.deviceId,
     };
 
     if (tokenData.isNotEmpty) {
@@ -39,6 +42,7 @@ class LoginViewModel extends GetxController {
       FocusManager.instance.primaryFocus?.unfocus();
       final response = await _apiService
           .postRequest(APIUrls.loginUrl, loginData, type: 'login');
+      print("Login Response: ${response.statusCode} - ${response.body}");
       var responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -113,6 +117,9 @@ class LoginViewModel extends GetxController {
           await prefs.setString(
               'companyname', responseData['profile']['companyname'].toString());
 
+          await prefs.setString(
+              'userToken', responseData['profile']['usertoken'].toString());
+
           showSuccessDialog(
             "Logged In Successfully",
             onComplete: () {
@@ -169,10 +176,23 @@ class LoginViewModel extends GetxController {
           //           ],
           //         ));
         }
+      } else if (response.statusCode == 401) {
+        showErrorDialog(
+          responseData['message'] ??
+              "Unauthorized. Please check your credentials.",
+          onComplete: () {},
+        );
       } else if (response.statusCode == 402) {
         showErrorDialog(
           responseData['message'] ??
               "Payment Required. Please contact support.",
+          onComplete: () {
+            // Optional: You can perform additional actions after the dialog is closed
+          },
+        );
+      } else if (response.statusCode == 409) {
+        showErrorDialog(
+          responseData['message'],
           onComplete: () {
             // Optional: You can perform additional actions after the dialog is closed
           },

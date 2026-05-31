@@ -95,7 +95,7 @@ class FollowBackFormController extends GetxController
     getCallBackData();
     // _startWorker();
     //   ever(followBackList, (_) => updateFilteredList());
-    // ever(selectedFilter, (_) => updateCallBackFilteredList());
+    ever(selectedFilter, (_) => filtercallBack());
 
     ever(followBackList, (_) => updateFilteredList());
 
@@ -115,15 +115,16 @@ class FollowBackFormController extends GetxController
       }
     });
 
-    debounce(
-      searchText,
-      (_) {
-        currentPage.value = 1;
-        followBackList.clear();
-        fetchFollowBackList();
-      },
-      time: const Duration(milliseconds: 500),
-    );
+    // debounce(
+    //   searchText,
+    //   (_) {
+    //     currentPage.value = 1;
+    //     followBackList.clear();
+    //     filtercallBack(searchQuery: searchText.value);
+    //   },
+    //   time: const Duration(milliseconds: 500),
+    // );
+
     // callController = TabController(length: 4, vsync: this);
     // callController.addListener(() {
     //   if (!callController.indexIsChanging) {
@@ -488,20 +489,19 @@ class FollowBackFormController extends GetxController
     }
   }
 
-  void applyLocalFilter() {
-    // If nothing selected → show all data
-    if (selectedtellecaller.isEmpty) {
-      callBackData.assignAll(allCallBackData);
-      return;
-    }
+  // void applyLocalFilter() {
+  //   // If nothing selected → show all data
+  //   if (selectedtellecaller.isEmpty) {
+  //     callBackData.assignAll(allCallBackData);
+  //     return;
+  //   }
 
-    final filteredList = allCallBackData.where((item) {
-      return selectedtellecaller.contains(item.id);
-    }).toList();
+  //   final filteredList = allCallBackData.where((item) {
+  //     return selectedtellecaller.contains(item.id);
+  //   }).toList();
 
-    callBackData.assignAll(filteredList);
-  }
-
+  //   callBackData.assignAll(filteredList);
+  // }
   Future<void> getCallLogData() async {
     iscallLogLoading.value = true;
 
@@ -1045,9 +1045,11 @@ class FollowBackFormController extends GetxController
   }
 
   void selectFilter(int index) {
+    FollowBackFormController followBackFormController = Get.find();
     selectedFilter.value = index;
-
+    //  followBackFormController.updateFilteredList();
     String? teamleader = getSelectedTeamLeaderId();
+
     filtercallBack(teamLeaderId: teamleader);
   }
 

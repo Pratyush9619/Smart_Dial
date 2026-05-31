@@ -23,6 +23,7 @@ import 'package:smart_solutions/views/login_request_screen.dart';
 import 'package:smart_solutions/views/login_screen.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/chartCard_controller.dart';
+import '../services/logout_helper.dart';
 import '../services/tab_state_service.dart';
 import 'dashboard_screen.dart';
 
@@ -47,11 +48,19 @@ class _MainScreenState extends State<MainScreen> {
   final CommonFilterController _commonFilterController =
       Get.find<CommonFilterController>();
 
+  final RxInt _secureType = 0.obs;
+
   @override
   void initState() {
     super.initState();
     _previousIndex = widget.pageIndex;
     _controller = PersistentTabController(initialIndex: widget.pageIndex);
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    _secureType.value = prefs.getInt('secureType') ?? 0;
   }
 
   @override
@@ -78,6 +87,16 @@ class _MainScreenState extends State<MainScreen> {
     } finally {
       _isCheckingAuth = false;
     }
+  }
+
+  Future<bool> _ensureLoggedOnAnotherDevice() async {
+    final response = await ApiService().checkUserLoggedInOnAnotherDevice();
+
+    if (response == true) {
+      await LogoutHelper.logout(Get.context!);
+      return true; // user logged out
+    }
+    return false;
   }
 
   List<PersistentTabConfig> _buildTabs() {
@@ -291,40 +310,41 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ),
-        PersistentTabConfig(
-          screen: ListingScreen(
-            key: const ValueKey('listing_screen '),
-            title: 'Listing',
-            isShowBack: false,
-            isDrawer: true,
-            //key: const ValueKey('hrm_screen')
-          ),
-          item: ItemConfig(
-            icon: SvgPicture.asset(
-              'assets/images/drawer.svg',
-              colorFilter: ColorFilter.mode(
-                themeController.primaryColor.value,
-                BlendMode.srcIn,
+        if (_secureType.value == 0)
+          PersistentTabConfig(
+            screen: ListingScreen(
+              key: const ValueKey('listing_screen '),
+              title: 'Listing',
+              isShowBack: false,
+              isDrawer: true,
+              //key: const ValueKey('hrm_screen')
+            ),
+            item: ItemConfig(
+              icon: SvgPicture.asset(
+                'assets/images/drawer.svg',
+                colorFilter: ColorFilter.mode(
+                  themeController.primaryColor.value,
+                  BlendMode.srcIn,
+                ),
+              ),
+              inactiveIcon: SvgPicture.asset(
+                'assets/images/drawer.svg',
+                colorFilter: ColorFilter.mode(
+                  Colors.grey.shade600,
+                  BlendMode.srcIn,
+                ),
+              ),
+              // icon: const Icon(Icons.co_present_outlined, size: 24),
+              // inactiveIcon: const Icon(Icons.co_present_outlined, size: 24),
+              title: "Listing ",
+              activeForegroundColor: themeController.primaryColor.value,
+              inactiveForegroundColor: Colors.grey.shade600,
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            inactiveIcon: SvgPicture.asset(
-              'assets/images/drawer.svg',
-              colorFilter: ColorFilter.mode(
-                Colors.grey.shade600,
-                BlendMode.srcIn,
-              ),
-            ),
-            // icon: const Icon(Icons.co_present_outlined, size: 24),
-            // inactiveIcon: const Icon(Icons.co_present_outlined, size: 24),
-            title: "Listing ",
-            activeForegroundColor: themeController.primaryColor.value,
-            inactiveForegroundColor: Colors.grey.shade600,
-            textStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
           ),
-        ),
         PersistentTabConfig(
           screen: LoginRequestScreen(
             key: const ValueKey('hrm_screen'),
@@ -441,8 +461,11 @@ class _MainScreenState extends State<MainScreen> {
     if (!ok) return;
 
     await refreshTab(tab);
+    tabService.updateTab(newIndex, tab);
 
     tabService.currentTab.value = tab;
+    final isLoggedOut = await _ensureLoggedOnAnotherDevice();
+    if (isLoggedOut) return;
   }
 
   // void _onTabChanged(int newIndex) async {
@@ -541,8 +564,10 @@ class _MainScreenState extends State<MainScreen> {
           return MainTab.dashboard;
         case 1:
           return MainTab.leads;
+
         case 2:
           return MainTab.listing;
+
         case 3:
           return MainTab.request;
         default:

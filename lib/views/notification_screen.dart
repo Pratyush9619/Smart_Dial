@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_solutions/controllers/notification_controller.dart';
@@ -225,6 +226,39 @@ class _NotificationSCreenState extends State<NotificationSCreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          //   decoration: BoxDecoration(
+          //     color: Colors.green.withOpacity(.1),
+          //     borderRadius: BorderRadius.circular(20),
+          //   ),
+          //   child: Text(
+          //     status,
+          //     style: TextStyle(
+          //       fontSize: 11,
+          //       color: Colors.green.shade700,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          // ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -279,22 +313,22 @@ class _NotificationSCreenState extends State<NotificationSCreen> {
                     ),
 
                     /// 🟢 STATUS
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    // Container(
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 10, vertical: 4),
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.green.withOpacity(.1),
+                    //     borderRadius: BorderRadius.circular(20),
+                    //   ),
+                    //   child: Text(
+                    //     status,
+                    //     style: TextStyle(
+                    //       fontSize: 11,
+                    //       color: Colors.green.shade700,
+                    //       fontWeight: FontWeight.w600,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -318,14 +352,28 @@ class _NotificationSCreenState extends State<NotificationSCreen> {
           /// 📝 MESSAGE
           Text(
             msg,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
+            softWrap: true,
+            maxLines: null,
             style: const TextStyle(
               fontSize: 13,
               height: 1.4,
               color: Colors.black54,
             ),
           ),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+                icon: const Icon(Icons.copy, size: 18),
+                color: themeController.primaryColor.value,
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: msg));
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Copied to clipboard')),
+                  );
+                }),
+          )
         ],
       ),
     );

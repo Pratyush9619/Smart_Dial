@@ -728,108 +728,174 @@ class DataController extends GetxController {
     }
   }
 
-  Future<void> fetchmoveToLoginData(String id) async {
-    DataController dataController = Get.find<DataController>();
-    dataController.editLoadData();
-    isloginRequestDataEntryLoading(true);
+  // Future<void> fetchmoveToLoginData(String id) async {
+  //   DataController dataController = Get.find<DataController>();
+  //   dataController.editLoadData();
+  //   isloginRequestDataEntryLoading(true);
 
+  //   try {
+  //     Map<String, dynamic> data = {"login_id": id};
+  //     var response =
+  //         await ApiService().postRequest(APIUrls.getMoveToLoginData, data);
+
+  //     if (response.statusCode == 200) {
+  //       final moveToLoginModel = moveToLoginModelFromJson(response.body);
+  //       final data = moveToLoginModel.data;
+
+  //       if (data.customerLoginModel.customerName == null ||
+  //           data.customerLoginModel.customerName.isEmpty) {
+  //         Get.dialog(
+  //           barrierDismissible: false,
+  //           AlertDialog(
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(16),
+  //             ),
+  //             title: const Row(
+  //               children: [
+  //                 Icon(Icons.error_outline, color: Colors.redAccent),
+  //                 SizedBox(width: 10),
+  //                 Text('Error'),
+  //               ],
+  //             ),
+  //             content: const Text('Customer name not found.'),
+  //             actions: [
+  //               SizedBox(
+  //                 width: double.infinity,
+  //                 child: ElevatedButton(
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: themeController.primaryColor.value,
+  //                   ),
+  //                   onPressed: () async {
+  //                     Get.back();
+  //                     // 2️⃣ Close dialog
+  //                     Get.back();
+  //                   },
+  //                   child: const Text(
+  //                     'OK',
+  //                     style: TextStyle(color: Colors.white),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //         // Get.dialog(
+  //         //   WillPopScope(
+  //         //     onWillPop: () =>
+  //         //         Future.value(false), // Prevent back button dismissal
+  //         //     child: AlertDialog(
+  //         //       shape: RoundedRectangleBorder(
+  //         //         borderRadius: BorderRadius.circular(16),
+  //         //       ),
+  //         //       titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+  //         //       contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+  //         //       actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+  //         //       title: const Row(
+  //         //         children: [
+  //         //           Icon(
+  //         //             Icons.error_outline,
+  //         //             color: Colors.redAccent,
+  //         //             size: 28,
+  //         //           ),
+  //         //           SizedBox(width: 10),
+  //         //           Text(
+  //         //             'Error',
+  //         //             style: TextStyle(
+  //         //               fontWeight: FontWeight.bold,
+  //         //             ),
+  //         //           ),
+  //         //         ],
+  //         //       ),
+  //         //       content: const Text(
+  //         //         'Customer name not found.',
+  //         //         style: TextStyle(
+  //         //           fontSize: 14,
+  //         //           color: Colors.black87,
+  //         //         ),
+  //         //       ),
+  //         //       actions: [
+  //         //         SizedBox(
+  //         //           width: double.infinity,
+  //         //           child: ElevatedButton(
+  //         //             style: ElevatedButton.styleFrom(
+  //         //               backgroundColor: themeController.primaryColor.value,
+  //         //               shape: RoundedRectangleBorder(
+  //         //                 borderRadius: BorderRadius.circular(10),
+  //         //               ),
+  //         //             ),
+  //         //             onPressed: () async {
+  //         //               if (Get.isSnackbarOpen) {
+  //         //                 Get.closeCurrentSnackbar();
+  //         //               }
+
+  //         //               Get.back();
+  //         //             },
+  //         //             child: const Text(
+  //         //               'OK',
+  //         //               style: TextStyle(
+  //         //                 fontWeight: FontWeight.bold,
+  //         //                 color: Colors.white,
+  //         //               ),
+  //         //             ),
+  //         //           ),
+  //         //         ),
+  //         //       ],
+  //         //     ),
+  //         //   ),
+  //         //   barrierDismissible: false,
+  //         // );
+
+  //         return;
+  //       }
+
+  //       contactNumber.value = data.contactNumber;
+  //       selectedSource.value = data.sourcing;
+  //       loanAmountController.text = data.loanAmount;
+  //       selectTelecallerName.value = data.telecallerId;
+  //       loginRequestId.value = data.loginRequestId;
+
+  //       selectedBankName.value = data.bankname;
+  //       customerName.value = data.customerLoginModel.customerName;
+  //       customerId.value = data.customerLoginModel.customerId;
+  //       dob.value = DateFormat('dd-MM-yyyy')
+  //           .format(DateTime.parse(data.customerLoginModel.dob));
+  //       companyName.value = data.customerLoginModel.companyName;
+  //       income.value = data.customerLoginModel.netIncome;
+
+  //       if (data.telecallerId != null && data.telecallerId.isNotEmpty) {
+  //         await getTeamLeadById(data.telecallerId);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     logOutput('An error occurred while fetching source list: $e');
+  //   } finally {
+  //     isloginRequestDataEntryLoading(false);
+  //   }
+  // }
+  Future<bool> fetchmoveToLoginData(String id) async {
     try {
-      Map<String, dynamic> data = {"login_id": id};
-      var response =
-          await ApiService().postRequest(APIUrls.getMoveToLoginData, data);
+      final response = await ApiService()
+          .postRequest(APIUrls.getMoveToLoginData, {"login_id": id});
 
       if (response.statusCode == 200) {
-        final moveToLoginModel = moveToLoginModelFromJson(response.body);
-        final data = moveToLoginModel.data;
+        final model = moveToLoginModelFromJson(response.body);
+
+        final data = model.data;
 
         if (data.customerLoginModel.customerName == null ||
             data.customerLoginModel.customerName.isEmpty) {
-          Get.dialog(
-            WillPopScope(
-              onWillPop: () =>
-                  Future.value(false), // Prevent back button dismissal
-              child: AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                title: const Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: Colors.redAccent,
-                      size: 28,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Error',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                content: const Text(
-                  'Customer name not found.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
-                ),
-                actions: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: themeController.primaryColor.value,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () {
-                        Get.back(); // close dialog
-                        Get.back(); // go to previous screen
-                      },
-                      child: const Text(
-                        'OK',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            barrierDismissible: false,
-          );
-
-          return;
+          return false;
         }
 
+        // assign values only
         contactNumber.value = data.contactNumber;
-        selectedSource.value = data.sourcing;
-        loanAmountController.text = data.loanAmount;
-        selectTelecallerName.value = data.telecallerId;
-        loginRequestId.value = data.loginRequestId;
 
-        selectedBankName.value = data.bankname;
-        customerName.value = data.customerLoginModel.customerName;
-        customerId.value = data.customerLoginModel.customerId;
-        dob.value = DateFormat('dd-MM-yyyy')
-            .format(DateTime.parse(data.customerLoginModel.dob));
-        companyName.value = data.customerLoginModel.companyName;
-        income.value = data.customerLoginModel.netIncome;
-
-        if (data.telecallerId != null && data.telecallerId.isNotEmpty) {
-          await getTeamLeadById(data.telecallerId);
-        }
+        return true;
       }
+
+      return false;
     } catch (e) {
-      logOutput('An error occurred while fetching source list: $e');
+      return false;
     } finally {
       isloginRequestDataEntryLoading(false);
     }

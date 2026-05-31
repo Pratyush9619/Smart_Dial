@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import 'package:smart_solutions/controllers/common_filter_controller.dart';
 import 'package:smart_solutions/theme/app_theme.dart';
 
+import '../controllers/incentive_controller.dart';
 import '../controllers/theme_controller.dart';
 
 class SearchBarWithClear extends StatefulWidget {
@@ -14,12 +16,14 @@ class SearchBarWithClear extends StatefulWidget {
   final TextInputType textInputType;
   final FocusNode? focusNode;
   final ValueChanged<DateTimeRange?>? onDateRangeSelected;
+  final Function(DateTime)? onMonthSelected;
   final DateTime? initialDate;
   final DateTime? firstDate;
   final DateTime? lastDate;
   final String? dateHintText;
   final bool showDatePickerIcon;
   final String hintText;
+  final bool monthOnly;
 
   const SearchBarWithClear({
     Key? key,
@@ -35,6 +39,8 @@ class SearchBarWithClear extends StatefulWidget {
     this.dateHintText = 'Selected Date',
     this.showDatePickerIcon = true,
     this.hintText = 'Search Text Here',
+    this.monthOnly = false,
+    this.onMonthSelected,
   }) : super(key: key);
 
   @override
@@ -47,6 +53,9 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
 
   final CommonFilterController _commonFilterController =
       Get.find<CommonFilterController>();
+
+  final IncentiveController incentiveController =
+      Get.find<IncentiveController>();
 
   final ThemeController _themeController = Get.find<ThemeController>();
 
@@ -73,6 +82,19 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
     final FocusNode focusNode = widget.focusNode ?? _internalFocusNode;
     focusNode.unfocus();
 
+    if (widget.monthOnly) {
+      /// 🔥 MONTH PICKER MODE
+      final DateTime? pickedMonth = await _showMonthPicker();
+
+      if (pickedMonth == null) return;
+
+      final DateTime yearMonth = pickedMonth;
+
+      _commonFilterController.isDateRangeSelected.value = true;
+      widget.onMonthSelected?.call(yearMonth);
+      return;
+    }
+
     final DateTimeRange? pickedRange = await showDateRangePicker(
         context: context,
         firstDate: widget.firstDate ?? DateTime(2000),
@@ -87,11 +109,80 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
     }
   }
 
+  Future<DateTime?> _showMonthPicker() async {
+    int selectedYear = DateTime.now().year;
+
+    return showDialog<DateTime>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Month'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// YEAR
+              DropdownButton<int>(
+                value: selectedYear,
+                isExpanded: true,
+                items: List.generate(10, (index) {
+                  final year = DateTime.now().year - 5 + index;
+                  return DropdownMenuItem(
+                    value: year,
+                    child: Text(year.toString()),
+                  );
+                }),
+                onChanged: (value) {
+                  selectedYear = value!;
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              /// MONTH
+              GridView.builder(
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 2.5,
+                ),
+                itemCount: 12,
+                itemBuilder: (_, index) {
+                  final month = index + 1;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(
+                        context,
+                        DateTime(selectedYear, month),
+                      );
+                    },
+                    child: Card(
+                      child: Center(
+                        child: Text(
+                          DateFormat.MMM().format(
+                            DateTime(0, month),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _clearDate() {
     _commonFilterController.clearDateFilter();
     _commonFilterController.selectedRange.value = null;
 
     widget.onDateRangeSelected?.call(null);
+
+    if (widget.monthOnly) {
+      incentiveController.clearFilters();
+    }
   }
 
   void _clearSearchText() {
@@ -143,11 +234,15 @@ class _SearchBarWithClearState extends State<SearchBarWithClear> {
                                 ),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  _commonFilterController.selectedRange.value !=
-                                          null
-                                      ? "${_formatDate(_commonFilterController.selectedRange.value!.start)} - "
-                                          "${_formatDate(_commonFilterController.selectedRange.value!.end)}"
-                                      : widget.dateHintText!,
+                                  widget.monthOnly
+                                      ? incentiveController
+                                          .searchController.text
+                                      : _commonFilterController
+                                                  .selectedRange.value !=
+                                              null
+                                          ? "${_formatDate(_commonFilterController.selectedRange.value!.start)} - "
+                                              "${_formatDate(_commonFilterController.selectedRange.value!.end)}"
+                                          : widget.dateHintText!,
                                   style: TextStyle(
                                     fontSize: 14.sp,
                                     color: Colors.black87,

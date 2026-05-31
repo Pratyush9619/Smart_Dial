@@ -12,16 +12,17 @@ class IncentiveCard extends StatelessWidget {
   final List<IncentiveItem> items;
   final bool isNextPage;
   final VoidCallback? onTap;
+  final Widget? footer;
 
-  const IncentiveCard({
-    super.key,
-    required this.title,
-    this.duration,
-    required this.statusColor,
-    required this.items,
-    this.isNextPage = false,
-    this.onTap,
-  });
+  const IncentiveCard(
+      {super.key,
+      required this.title,
+      this.duration,
+      required this.statusColor,
+      required this.items,
+      this.isNextPage = false,
+      this.onTap,
+      this.footer});
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +115,10 @@ class IncentiveCard extends StatelessWidget {
                 );
               }).toList(),
             ),
+            if (footer != null) ...[
+              const SizedBox(height: 6),
+              footer!,
+            ],
           ],
         ),
       ),

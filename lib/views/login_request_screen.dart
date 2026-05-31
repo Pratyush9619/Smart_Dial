@@ -141,9 +141,99 @@ class LoginRequestScreen extends StatelessWidget {
                             showMoveToLogin:
                                 StaticStoredData.roleName != 'telecaller' &&
                                     StaticStoredData.roleName != 'teamleader',
+
                             onMoveToLogin: () async {
-                              //      dataController.customer_id.value = data.customerId ?? '';
-                              await Get.to(() => DataEntryForm(
+                              final success = await dataController
+                                  .fetchmoveToLoginData(data.id.toString());
+
+                              if (!success) {
+                                Get.dialog(
+                                  Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // 🔴 Icon with background circle
+                                          Container(
+                                            padding: const EdgeInsets.all(14),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.red.withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.error_outline,
+                                              color: Colors.redAccent,
+                                              size: 40,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 16),
+
+                                          // Title
+                                          const Text(
+                                            "Oops!",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 10),
+
+                                          // Message
+                                          const Text(
+                                            "Customer name not found.",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 20),
+
+                                          // Button
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
+                                              ),
+                                              onPressed: () async {
+                                                await safeNavigateBack();
+                                              },
+                                              child: const Text(
+                                                "OK",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  barrierDismissible: false,
+                                );
+                                return;
+                              }
+
+                              Get.to(() => DataEntryForm(
                                     id: data.id,
                                     tellecallerId: data.telecallerId,
                                     dsaId: data.sourcing.toString(),
@@ -151,6 +241,16 @@ class LoginRequestScreen extends StatelessWidget {
                                     isMovetoLogin: true,
                                   ));
                             },
+                            // onMoveToLogin: () {
+                            //   //      dataController.customer_id.value = data.customerId ?? '';
+                            //   Get.to(() => DataEntryForm(
+                            //         id: data.id,
+                            //         tellecallerId: data.telecallerId,
+                            //         dsaId: data.sourcing.toString(),
+                            //         bankerId: data.bankId.toString(),
+                            //         isMovetoLogin: true,
+                            //       ));
+                            // },
                             onEdit: () async {
                               controller.currentId.value = data.id;
                               controller.customerName.value = data.customerName;
@@ -707,4 +807,28 @@ Widget _buildIcon(dynamic icon) {
 String maskFirst6Digits(String number) {
   if (number.length < 6) return number; // Handle edge case
   return 'xxxxxx${number.substring(6)}';
+}
+
+Future<void> safeNavigateBack() async {
+  try {
+    // 1️⃣ close snackbar safely
+    if (Get.isSnackbarOpen) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      Get.closeCurrentSnackbar();
+    }
+  } catch (e) {}
+
+  try {
+    // 2️⃣ close dialog if any
+    if (Get.isDialogOpen ?? false) {
+      Navigator.of(Get.context!, rootNavigator: true).pop();
+    }
+  } catch (e) {}
+
+  // 3️⃣ final back
+  await Future.delayed(const Duration(milliseconds: 100));
+
+  if (Navigator.of(Get.context!).canPop()) {
+    Get.back();
+  }
 }

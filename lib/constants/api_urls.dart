@@ -24,6 +24,8 @@ class APIUrls {
 
   static const String newBaseUrl = 'https://smartdial.co.in/';
   static const String logoutCheck = 'Auth/useractivecheck';
+  static const String checkOnAnotherDeviceLogin = 'Auth/usertokencheck';
+
   static const String changePassword = "Auth/change_password";
   static const String activity = "Auth/useractivecheck";
   static const String sourcingList = "Auth/getdatasourcingapi";
@@ -85,4 +87,9 @@ class APIUrls {
   static const String resetPassword = 'Auth/resetpassword';
 
   static const String getMoveToLoginData = 'Auth/getmovetologindata';
+
+  static const String incentiveData = 'Auth/getincentive';
+  static const String incentiveSummery = 'Auth/getincentivebytelecallerid';
+
+  static const String logout = 'Auth//logout';
 }

@@ -920,7 +920,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
             padding: const EdgeInsets.only(left: 10.0, right: 8.0),
             child: prefixIcon,
           ),
-          SizedBox(
+          const SizedBox(
             height: 50,
             width: 5,
             child: VerticalDivider(thickness: 1),
@@ -952,7 +952,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
             style: const TextStyle(color: AppColors.secondayColor),
 
             onChanged: (value) {
-              content!.value = value;
+              content.value = value;
               if (onChanged != null) onChanged(value);
             },
 

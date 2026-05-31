@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_solutions/constants/api_urls.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
 import 'package:smart_solutions/controllers/all_disbursement_controller.dart';
@@ -34,6 +35,7 @@ import 'package:smart_solutions/widget/text_style.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../binding/active_file_binding.dart';
 import '../models/getGroupStatus.dart';
+import 'incentive_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -63,6 +65,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   final bool isNotTelecaller = StaticStoredData.roleName != 'telecaller';
 
+  RxInt secureType = 0.obs;
+
   @override
   void initState() {
     // if (StaticStoredData.roleName == 'telecaller') {
@@ -71,10 +75,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       themeController.loadSavedTheme();
     });
+    loadSecureType();
     controller.onInit();
     super.initState();
   }
 
+  Future<void> loadSecureType() async {
+    final prefs = await SharedPreferences.getInstance();
+    secureType.value = prefs.getInt('secureType') ?? 0;
+  }
   // @override
   // void dispose() {
   //   //   controller.tabController.dispose();
@@ -243,7 +252,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       //   },
                       // ];
 
-                      final callData = controller.callTimeModel.callTimeModel;
+                      final callData =
+                          controller.callTimeModel.value?.callTimeModel;
 
                       final List<Map<String, dynamic>> dashboardItems = [
                         {
@@ -254,17 +264,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                         },
                         {
                           "icon": "assets/images/dashboard_connected.svg",
-                          "value": controller.totalPicked.value.toString(),
+                          "value": controller.totalPicked.toString(),
                           "label": "Connected",
                           "textColor": AppColors.greenCOlor
                         },
                         {
                           "icon": "assets/images/dashboard_not_connected.svg",
-                          "value": controller.totalNotPicked.value.toString(),
+                          "value": controller.totalNotPicked.toString(),
                           "label": "Not Connected",
                           "textColor": AppColors.redColor
                         },
                       ];
+
                       return Column(children: [
                         Container(
                           color: AppColors.appBarTextColor,
@@ -1081,26 +1092,27 @@ class _DashboardScreenState extends State<DashboardScreen>
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Obx(() {
+                            final item =
+                                controller.loginFileStatusCount.firstOrNull;
+
+                            final activeCount = item?.activefilecount ?? '0';
+                            final activeAmount = item?.activeloanamount ?? '0';
+
+                            final inactiveCount =
+                                item?.inactivefilecount ?? '0';
+                            final inactiveAmount =
+                                item?.inactiveloanamount ?? '0';
+
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Container(
-                                    margin: EdgeInsets.only(right: 8.w),
+                                    margin: EdgeInsets.only(right: 4.w),
                                     child: FileStatusCard(
                                       title: "Active Files",
-                                      fileCount: controller.loginFileStatusCount
-                                              .first.activefilecount.isNotEmpty
-                                          ? controller.loginFileStatusCount
-                                              .first.activefilecount
-                                              .toString()
-                                          : '0',
-                                      amount: controller.loginFileStatusCount
-                                              .first.activeloanamount.isNotEmpty
-                                          ? controller.loginFileStatusCount
-                                              .first.activeloanamount
-                                              .toString()
-                                          : '0',
+                                      fileCount: activeCount,
+                                      amount: activeAmount,
                                       statusColor: Colors.green,
                                       onPress: () {
                                         Get.to(
@@ -1117,27 +1129,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                                 Expanded(
                                   child: Container(
-                                    margin: EdgeInsets.only(left: 8.w),
+                                    margin: EdgeInsets.only(left: 4.w),
                                     child: FileStatusCard(
                                       title: "Inactive Files",
-                                      fileCount: controller
-                                              .loginFileStatusCount
-                                              .first
-                                              .inactivefilecount
-                                              .isNotEmpty
-                                          ? controller.loginFileStatusCount
-                                              .first.inactivefilecount
-                                              .toString()
-                                          : '0',
-                                      amount: controller
-                                              .loginFileStatusCount
-                                              .first
-                                              .inactiveloanamount
-                                              .isNotEmpty
-                                          ? controller.loginFileStatusCount
-                                              .first.inactiveloanamount
-                                              .toString()
-                                          : '0',
+                                      fileCount: inactiveCount,
+                                      amount: inactiveAmount,
                                       statusColor: Colors.red,
                                       onPress: () {
                                         Get.to(
@@ -1163,51 +1159,122 @@ class _DashboardScreenState extends State<DashboardScreen>
                         //     ? headerTitleWithContainer('Call Back & Incentives')
                         //     : headerTitleWithContainer('Performance Insights'),
 
-                        headerTitleWithContainer(
-                          isNotTelecaller
-                              ? 'Performance Insight'
-                              : 'Call Back & Incentives',
-                        ),
+                        headerTitleWithContainer(isNotTelecaller
+                            ? 'Performance Insight'
+                            : 'Call Back ${secureType.value == 1 ? '' : '& Target Vs Achievement'}'),
                         verticalSpace(15.h),
 
-                        verticalSpace(15.h),
                         isNotTelecaller
                             ? Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
                                 child: Column(children: [
-                                  IncentiveCard(
-                                    title: 'Call Back',
-                                    duration: '',
-                                    isNextPage: true,
-                                    onTap: () => Get.to(const AdminCallBack(
-                                        title: 'Call Back')),
-                                    items: [
-                                      IncentiveItem(
-                                        "Today",
-                                        followBackFormController!
-                                                .callBackTotalData.isNotEmpty
-                                            ? followBackFormController!
-                                                .callBackTotalData
-                                                .first
-                                                .todayCallbackTotal
-                                                .toString()
-                                            : '0',
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width -
+                                                    24) /
+                                                2,
+                                        child: IncentiveCard(
+                                          title: 'Call Back',
+                                          duration: '',
+                                          isNextPage: true,
+                                          onTap: () => Get.to(
+                                              const AdminCallBack(
+                                                  title: 'Call Back')),
+                                          items: [
+                                            IncentiveItem(
+                                              "Today",
+                                              followBackFormController!
+                                                      .callBackTotalData
+                                                      .isNotEmpty
+                                                  ? followBackFormController!
+                                                      .callBackTotalData
+                                                      .first
+                                                      .todayCallbackTotal
+                                                      .toString()
+                                                  : '0',
+                                            ),
+                                            IncentiveItem(
+                                              "Monthly",
+                                              followBackFormController!
+                                                      .callBackTotalData
+                                                      .isNotEmpty
+                                                  ? followBackFormController!
+                                                      .callBackTotalData
+                                                      .first
+                                                      .monthlyCallbackTotal
+                                                      .toString()
+                                                  : '0',
+                                            )
+                                          ],
+                                          statusColor: AppColors.greenCOlor,
+                                        ),
                                       ),
-                                      IncentiveItem(
-                                        "Monthly",
-                                        followBackFormController!
-                                                .callBackTotalData.isNotEmpty
-                                            ? followBackFormController!
-                                                .callBackTotalData
-                                                .first
-                                                .monthlyCallbackTotal
-                                                .toString()
-                                            : '0',
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width -
+                                                    24) /
+                                                2,
+                                        child: Obx(() {
+                                          final item = controller
+                                              .loginFileStatusCount.firstOrNull;
+
+                                          final fileCount =
+                                              item?.disbursedfilecount ?? 0;
+                                          final amount =
+                                              item?.disbursedamount ?? 0;
+
+                                          return FileStatusCard(
+                                            title: "Disbursement",
+                                            fileCount: fileCount.toString(),
+                                            amount: amount.toString(),
+                                            statusColor: Colors.blue,
+                                            onPress: () {
+                                              Get.to(const AdminDisbursement(
+                                                title: 'Disbursement',
+                                              ));
+                                            },
+                                          );
+                                        }),
                                       )
                                     ],
-                                    statusColor: AppColors.greenCOlor,
                                   ),
+                                  // IncentiveCard(
+                                  //   title: 'Call Back',
+                                  //   duration: '',
+                                  //   isNextPage: true,
+                                  //   onTap: () => Get.to(const AdminCallBack(
+                                  //       title: 'Call Back')),
+                                  //   items: [
+                                  //     IncentiveItem(
+                                  //       "Today",
+                                  //       followBackFormController!
+                                  //               .callBackTotalData.isNotEmpty
+                                  //           ? followBackFormController!
+                                  //               .callBackTotalData
+                                  //               .first
+                                  //               .todayCallbackTotal
+                                  //               .toString()
+                                  //           : '0',
+                                  //     ),
+                                  //     IncentiveItem(
+                                  //       "Monthly",
+                                  //       followBackFormController!
+                                  //               .callBackTotalData.isNotEmpty
+                                  //           ? followBackFormController!
+                                  //               .callBackTotalData
+                                  //               .first
+                                  //               .monthlyCallbackTotal
+                                  //               .toString()
+                                  //           : '0',
+                                  //     )
+                                  //   ],
+                                  //   statusColor: AppColors.greenCOlor,
+                                  // ),
 
                                   // Row(
                                   //   mainAxisAlignment:
@@ -1279,7 +1346,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       SizedBox(
                                         width:
                                             (MediaQuery.of(context).size.width -
-                                                    32) /
+                                                    24) /
                                                 2,
                                         child: IncentiveCard(
                                             title: 'Login Request',
@@ -1292,16 +1359,24 @@ class _DashboardScreenState extends State<DashboardScreen>
                                                   "Today",
                                                   controller
                                                           .loginFileRequestCount
-                                                          .first
-                                                          .todaycount ??
-                                                      '0'),
+                                                          .isNotEmpty
+                                                      ? controller
+                                                              .loginFileRequestCount
+                                                              .first
+                                                              .todaycount ??
+                                                          '0'
+                                                      : '0'),
                                               IncentiveItem(
                                                   "Monthly",
                                                   controller
                                                           .loginFileRequestCount
-                                                          .first
-                                                          .monthlycount ??
-                                                      '0'),
+                                                          .isNotEmpty
+                                                      ? controller
+                                                              .loginFileRequestCount
+                                                              .first
+                                                              .monthlycount ??
+                                                          '0'
+                                                      : '0'),
                                             ],
                                             statusColor: AppColors.greenCOlor),
                                       ),
@@ -1309,7 +1384,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       SizedBox(
                                         width:
                                             (MediaQuery.of(context).size.width -
-                                                    32) /
+                                                    24) /
                                                 2,
                                         child: IncentiveCard(
                                             title: 'Login Files',
@@ -1321,13 +1396,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                                               IncentiveItem(
                                                   "Today",
                                                   controller.loginFileCount
-                                                          .first.todaycount ??
-                                                      '0'),
+                                                          .isNotEmpty
+                                                      ? controller
+                                                              .loginFileCount
+                                                              .first
+                                                              .todaycount ??
+                                                          '0'
+                                                      : '0'),
                                               IncentiveItem(
                                                   "Monthly",
                                                   controller.loginFileCount
-                                                          .first.monthlycount ??
-                                                      '0'),
+                                                          .isNotEmpty
+                                                      ? controller
+                                                              .loginFileCount
+                                                              .first
+                                                              .monthlycount ??
+                                                          '0'
+                                                      : '0'),
                                             ],
                                             statusColor: AppColors.greenCOlor),
                                       ),
@@ -1365,37 +1450,127 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       statusColor: AppColors.greenCOlor,
                                     ),
                                   ],
-                                  verticalSpace(30.h),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      FileStatusCard(
-                                        title: "Disbursement",
-                                        fileCount: (controller
-                                                .loginFileStatusCount
-                                                .first
-                                                .disbursedfilecount)
-                                            .toString(),
-                                        amount: (controller.loginFileStatusCount
-                                                .first.disbursedamount)
-                                            .toString(),
-                                        statusColor: Colors.blue,
-                                        onPress: () {
-                                          Get.to(const AdminDisbursement(
-                                            title: 'Disbursement',
-                                          ));
-                                        },
-                                      ),
-                                      FileStatusCard(
-                                        title: "Incentive",
-                                        fileCount: '0',
-                                        amount: '0',
-                                        statusColor: Colors.yellow,
-                                        onPress: () {},
-                                      ),
-                                    ],
-                                  ),
+                                  verticalSpace(10.h),
+                                  Obx(() {
+                                    if (secureType.value == 1) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    final item =
+                                        controller.totalIncentive.firstOrNull;
+
+                                    final int target = item?.totalTarget ?? 0;
+                                    final int achievement =
+                                        item?.achievement ?? 0;
+                                    final int backlog =
+                                        item?.currentMonthBacklog ?? 0;
+
+                                    final double progress = target > 0
+                                        ? (achievement / target).clamp(0.0, 1.0)
+                                        : 0;
+                                    return IncentiveCard(
+                                        title: 'Target Vs Achievement',
+                                        isNextPage: true,
+                                        onTap: () => Get.to(const IncentivePage(
+                                            title: 'Target Vs Achievement')),
+                                        items: [
+                                          IncentiveItem(
+                                              "Target",
+                                              CurrencyUtils.formatAmount(
+                                                  target.toString())),
+                                          IncentiveItem(
+                                              "Achievement",
+                                              CurrencyUtils.formatAmount(
+                                                  achievement.toString())),
+                                          IncentiveItem(
+                                              "Backlog",
+                                              CurrencyUtils.formatAmount(
+                                                  backlog.toString())),
+                                        ],
+                                        statusColor: AppColors.greenCOlor,
+                                        footer: Column(
+                                          children: [
+                                            Stack(children: [
+                                              Container(
+                                                height: 6,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade200,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                              AnimatedContainer(
+                                                duration: const Duration(
+                                                    milliseconds: 600),
+                                                height: 6,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    progress *
+                                                    0.65,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: progress >= 1
+                                                        ? [
+                                                            Colors.blue,
+                                                            Colors
+                                                                .lightBlueAccent
+                                                          ]
+                                                        : [
+                                                            Colors.green,
+                                                            Colors.greenAccent
+                                                          ],
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 5),
+                                            ]),
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: Text(
+                                                "${(progress * 100).toStringAsFixed(0)}% achieved",
+                                                style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.grey),
+                                              ),
+                                            ),
+                                          ],
+                                        ));
+                                  })
+                                  // Row(
+                                  //   mainAxisAlignment:
+                                  //       MainAxisAlignment.spaceBetween,
+                                  //   children: [
+                                  //     FileStatusCard(
+                                  //       title: "Disbursement",
+                                  //       fileCount: (controller
+                                  //               .loginFileStatusCount
+                                  //               .first
+                                  //               .disbursedfilecount)
+                                  //           .toString(),
+                                  //       amount: (controller.loginFileStatusCount
+                                  //               .first.disbursedamount)
+                                  //           .toString(),
+                                  //       statusColor: Colors.blue,
+                                  //       onPress: () {
+                                  //         Get.to(const AdminDisbursement(
+                                  //           title: 'Disbursement',
+                                  //         ));
+                                  //       },
+                                  //     ),
+                                  //     FileStatusCard(
+                                  //       title: "Incentive",
+                                  //       onPress: () {
+                                  //         Get.to(const IncentivePage(
+                                  //             title: 'Target Vs Achievement'));
+                                  //       },
+                                  //       fileCount: '0',
+                                  //       amount: '0',
+                                  //       statusColor: Colors.yellow,
+                                  //     ),
+                                  //   ],
+                                  // ),
                                 ]))
                             : Padding(
                                 padding:
@@ -1465,21 +1640,101 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         ],
                                       ),
                                       SizedBox(height: 10.h),
-                                      IncentiveCard(
-                                          title: 'Incentives',
-                                          items: [
-                                            IncentiveItem("Target", "₹0"),
-                                            IncentiveItem(
-                                              "Achievement",
-                                              _disbursementDetailsController
-                                                      .disbursementList
-                                                      .isNotEmpty
-                                                  ? "₹${CurrencyUtils.formatAmount(_disbursementDetailsController.disbursementList.first.amount)}"
-                                                  : "₹0",
+                                      Obx(() {
+                                        if (secureType.value == 1) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        final data =
+                                            controller.summary.firstOrNull;
+                                        final target = data!.totalTarget;
+                                        final achievement = data.achievement;
+                                        final backlog =
+                                            data.currentMonthBacklog;
+
+                                        final double progress =
+                                            int.parse(target) > 0
+                                                ? (int.parse(achievement) /
+                                                    int.parse(target))
+                                                : 0;
+                                        return IncentiveCard(
+                                            title: 'Target Vs Achievement',
+                                            isNextPage: true,
+                                            onTap: () => Get.to(
+                                                const IncentivePage(
+                                                    title:
+                                                        'Target Vs Achievement')),
+                                            items: [
+                                              IncentiveItem(
+                                                  "Target",
+                                                  CurrencyUtils.formatAmount(
+                                                      target.toString())),
+                                              IncentiveItem(
+                                                  "Achievement",
+                                                  CurrencyUtils.formatAmount(
+                                                      achievement.toString())),
+                                              IncentiveItem(
+                                                  "Backlog",
+                                                  CurrencyUtils.formatAmount(
+                                                      backlog.toString()))
+                                            ],
+                                            footer: Column(
+                                              children: [
+                                                Stack(children: [
+                                                  Container(
+                                                    height: 6,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          Colors.grey.shade200,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                  ),
+                                                  AnimatedContainer(
+                                                    duration: const Duration(
+                                                        milliseconds: 600),
+                                                    height: 6,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            progress *
+                                                            0.65,
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        colors: progress >= 1
+                                                            ? [
+                                                                Colors.blue,
+                                                                Colors
+                                                                    .lightBlueAccent
+                                                              ]
+                                                            : [
+                                                                Colors.green,
+                                                                Colors
+                                                                    .greenAccent
+                                                              ],
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 5),
+                                                ]),
+                                                Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    "${(progress * 100).toStringAsFixed(0)}% achieved",
+                                                    style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color: Colors.grey),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            IncentiveItem("Incentive", "₹0"),
-                                          ],
-                                          statusColor: AppColors.greenCOlor)
+                                            statusColor: AppColors.greenCOlor);
+                                      })
                                     ],
                                   ),
                                 ),

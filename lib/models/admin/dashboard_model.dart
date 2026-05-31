@@ -11,6 +11,7 @@ class DasboardModel {
   Login loginFileCount;
   Getcalllogcount getcalllogcount;
   Gettelecallercallback gettelecallercallback;
+  TotalIncentive totalIncentive;
 
   DasboardModel({
     required this.loginFileStatus,
@@ -18,16 +19,17 @@ class DasboardModel {
     required this.loginFileCount,
     required this.getcalllogcount,
     required this.gettelecallercallback,
+    required this.totalIncentive,
   });
 
   factory DasboardModel.fromJson(Map<String, dynamic> json) => DasboardModel(
-        loginFileStatus: LoginFileStatus.fromJson(json["login_file_status"]),
-        loginRequestFile: Login.fromJson(json["login_request_file"]),
-        loginFileCount: Login.fromJson(json["login_file_count"]),
-        getcalllogcount: Getcalllogcount.fromJson(json["getcalllogcount"]),
-        gettelecallercallback:
-            Gettelecallercallback.fromJson(json["gettelecallercallback"]),
-      );
+      loginFileStatus: LoginFileStatus.fromJson(json["login_file_status"]),
+      loginRequestFile: Login.fromJson(json["login_request_file"]),
+      loginFileCount: Login.fromJson(json["login_file_count"]),
+      getcalllogcount: Getcalllogcount.fromJson(json["getcalllogcount"]),
+      gettelecallercallback:
+          Gettelecallercallback.fromJson(json["gettelecallercallback"]),
+      totalIncentive: TotalIncentive.fromJson(json['total_incentive']));
 
   Map<String, dynamic> toJson() => {
         "login_file_status": loginFileStatus.toJson(),
@@ -35,6 +37,7 @@ class DasboardModel {
         "login_file_count": loginFileCount.toJson(),
         "getcalllogcount": getcalllogcount.toJson(),
         "gettelecallercallback": gettelecallercallback.toJson(),
+        "total_incentive": totalIncentive.toJson()
       };
 }
 
@@ -86,6 +89,35 @@ class Gettelecallercallback {
         "today_callback": todayCallback,
         "monthly_callback": monthlyCallback,
       };
+}
+
+class TotalIncentive {
+  final int totalTarget;
+  final int achievement;
+  final int currentMonthBacklog;
+
+  TotalIncentive({
+    required this.totalTarget,
+    required this.achievement,
+    required this.currentMonthBacklog,
+  });
+
+  factory TotalIncentive.fromJson(Map<String, dynamic> json) {
+    return TotalIncentive(
+      totalTarget: int.tryParse(json['total_target']?.toString() ?? '0') ?? 0,
+      achievement: int.tryParse(json['achievement']?.toString() ?? '0') ?? 0,
+      currentMonthBacklog:
+          int.tryParse(json['current_month_backlog']?.toString() ?? '0') ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'total_target': totalTarget,
+      'achievement': achievement,
+      'current_month_backlog': currentMonthBacklog,
+    };
+  }
 }
 
 class Login {

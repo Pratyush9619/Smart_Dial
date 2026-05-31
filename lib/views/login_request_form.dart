@@ -51,8 +51,45 @@ class _LoginRequestFormState extends State<LoginRequestForm> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
-        if (didPop) {
+      canPop: false, // Disable default back navigation
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+
+        final shouldPop = await showDialog<bool>(
+          context: context, // ❗ use page context, NOT Get.context
+          barrierDismissible: false, // ✅ IMPORTANT
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Confirm'),
+              content: const Text('Are you sure you want to go back?'),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor:
+                        themeController.primaryColor.value.withOpacity(0.1),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: themeController.primaryColor.value,
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(dialogContext, true);
+
+                    // await controller.fetchDataEntryListSpecificId();
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (shouldPop == true) {
           controller.remarksList.clear();
           controller.isEdit.value = false;
           controller.isNew.value = false;
@@ -68,6 +105,8 @@ class _LoginRequestFormState extends State<LoginRequestForm> {
           controller.currentId = ''.obs;
           controller.sourceId.value = '';
           controller.selectedLoanStatus.value = '';
+
+          Navigator.of(context).pop();
         }
       },
       child: CommonScaffold(

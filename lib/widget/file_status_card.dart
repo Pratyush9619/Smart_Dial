@@ -24,10 +24,10 @@ class FileStatusCard extends StatelessWidget {
       child: Container(
         width: 175.w,
         // margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(11),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),

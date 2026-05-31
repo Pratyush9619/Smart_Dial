@@ -47,8 +47,8 @@ class DisbursementData {
       DisbursementData(
         id: json["id"],
         name: json["name"],
-        profileImage: json["profile_image"] ?? '',
-        teamleaderId: json['teamleader_id'],
+        profileImage: json["profile_image"]?.toString() ?? '',
+        teamleaderId: json['teamleader_id']?.toString() ?? '',
         loginCount: json["login_count"],
         disbursedCount: json["disbursed_count"],
         amount: json["amount"],

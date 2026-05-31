@@ -106,10 +106,11 @@ class _CallLogPageState extends State<CallLogPage> {
                   controller: _followBackController.searchController,
                   onClear: () {
                     _followBackController.clearFilters();
-                    //   _followBackController.updateFilteredList();
+                    _followBackController.updateFilteredList();
                   },
                   onChanged: (value) {
                     _followBackController.searchText.value = value;
+                    _followBackController.updateFilteredList(query: value);
                   },
                 ),
 

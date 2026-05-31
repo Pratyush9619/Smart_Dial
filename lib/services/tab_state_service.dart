@@ -4,6 +4,7 @@ enum MainTab { dashboard, leads, dialer, callLog, listing, request }
 
 class MainTabService extends GetxService {
   var currentTab = MainTab.dashboard.obs;
+  var currentIndex = 0.obs;
 
   final Map<MainTab, DateTime> _lastRefresh = {};
 
@@ -16,5 +17,12 @@ class MainTabService extends GetxService {
 
   void markRefreshed(MainTab tab) {
     _lastRefresh[tab] = DateTime.now();
+  }
+
+  void updateTab(int index, MainTab tab) {
+    if (currentIndex.value == index) return;
+
+    currentIndex.value = index;
+    currentTab.value = tab;
   }
 }

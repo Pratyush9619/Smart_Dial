@@ -14,12 +14,14 @@ import 'package:smart_solutions/services/api_service.dart';
 import '../components/dashboardgrid.dart';
 import '../constants/services.dart';
 import '../models/admin/dashboard_model.dart';
+import '../views/incentive/model/dashboard_incentive.dart';
 
 class DashboardController extends GetxController
     with GetSingleTickerProviderStateMixin {
   var dateRangeList = <DateTime?>[].obs;
   final ApiService _apiService = ApiService();
-  GetCallTimeModel callTimeModel = GetCallTimeModel();
+  // GetCallTimeModel callTimeModel = GetCallTimeModel();
+  Rx<GetCallTimeModel?> callTimeModel = Rx(null);
   var isLoading = true.obs;
   RxString totalValActive = "0".obs;
   RxString totalNoValActive = "0".obs;
@@ -44,11 +46,14 @@ class DashboardController extends GetxController
   var loginFileRequestCount = <Login>[].obs;
   var callLogCount = <Getcalllogcount>[].obs;
   var callBackCount = <Gettelecallercallback>[].obs;
+  var totalIncentive = <TotalIncentive>[].obs;
 
   final ScrollController scrollController = ScrollController();
 
   RxBool isActiveLoaded = false.obs;
   RxBool isCallLogLoaded = false.obs;
+
+  final summary = <IncentiveSummary>[].obs;
 
   Future<void> loadTodayAndMonthlyData() async {
     final FollowBackFormController followBackFormController =
@@ -183,9 +188,9 @@ class DashboardController extends GetxController
         getTopDisburseUser(),
         getDashboardTotalCount(),
         loadTodayAndMonthlyData(),
+        getIncentiveData()
       ]);
     } catch (e) {
-      isLoading.value = false;
       logOutput("Exception while fetching follow-back list: $e");
     } finally {
       isLoading.value = false;
@@ -531,15 +536,15 @@ class DashboardController extends GetxController
       final response =
           await _apiService.postRequest(APIUrls.getTimeGraphData, requestData);
       final decodedResponse = json.decode(response.body);
-      callTimeModel = GetCallTimeModel.fromJson(decodedResponse);
+      callTimeModel.value = GetCallTimeModel.fromJson(decodedResponse);
       totalContact =
-          callTimeModel.callTimeModel?.totalContact ?? <TotalContact>[];
-      totalNoContact =
-          callTimeModel.callTimeModel?.totalNocontact ?? <TotalNoContact>[];
-      totalAttempt = callTimeModel.callTimeModel?.totalAttemptContact ??
+          callTimeModel.value!.callTimeModel?.totalContact ?? <TotalContact>[];
+      totalNoContact = callTimeModel.value?.callTimeModel?.totalNocontact ??
+          <TotalNoContact>[];
+      totalAttempt = callTimeModel.value?.callTimeModel?.totalAttemptContact ??
           <TotalAttemptContact>[];
       totalDuration.value =
-          callTimeModel.callTimeModel!.totalDuration.toString();
+          callTimeModel.value!.callTimeModel!.totalDuration.toString();
       try {
         activeCallMap.clear();
         activeNoCallMap.clear();
@@ -679,16 +684,17 @@ class DashboardController extends GetxController
           finalTotalAttemptCallList.add(CallGraphModel(time: k, data: v));
         });
       } catch (e) {
-        totalNoContact =
-            callTimeModel.callTimeModel?.totalNocontact ?? <TotalNoContact>[];
-        totalContact =
-            callTimeModel.callTimeModel?.totalContact ?? <TotalContact>[];
-        totalAttempt = callTimeModel.callTimeModel?.totalAttemptContact ??
-            <TotalAttemptContact>[];
+        totalNoContact = callTimeModel.value?.callTimeModel?.totalNocontact ??
+            <TotalNoContact>[];
+        totalContact = callTimeModel.value!.callTimeModel?.totalContact ??
+            <TotalContact>[];
+        totalAttempt =
+            callTimeModel.value?.callTimeModel?.totalAttemptContact ??
+                <TotalAttemptContact>[];
         customLog("error while sorting data $e", name: "getTimeGraph");
       }
       customLog(
-          'this is Response ${callTimeModel.callTimeModel?.totalAttempt}');
+          'this is Response ${callTimeModel.value?.callTimeModel?.totalAttempt}');
     } catch (e) {
       customLog("error while parsing data $e", name: "getTimeGraph");
     }
@@ -762,6 +768,7 @@ class DashboardController extends GetxController
         loginFileCount.assign(dashboardCount.loginFileCount);
         callLogCount.assign(dashboardCount.getcalllogcount);
         callBackCount.assign(dashboardCount.gettelecallercallback);
+        totalIncentive.assign(dashboardCount.totalIncentive);
         // totaDashboardCount.assign(dashboardCount);
       } else {
         logOutput("Error: ${response.statusCode} - ${response.reasonPhrase}");
@@ -812,6 +819,27 @@ class DashboardController extends GetxController
                 child: rows[ind],
               )),
     );
+  }
+
+  Future<void> getIncentiveData() async {
+    try {
+      final response = await _apiService.postRequest(APIUrls.incentiveSummery, {
+        "telecaller_id": StaticStoredData.userId,
+      });
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        summary.assignAll([
+          IncentiveSummary.fromJson(decoded['data']),
+        ]);
+      } else {
+        Get.snackbar("Error", "Failed to load summary");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Something went wrong");
+      debugPrint("Summary API error: $e");
+    }
   }
 }
 

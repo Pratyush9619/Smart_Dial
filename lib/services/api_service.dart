@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_solutions/constants/api_urls.dart';
 import 'package:smart_solutions/constants/services.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
 import 'package:smart_solutions/models/user_logoutcheck_model.dart';
+
+import '../routes/app_routes.dart';
 
 class ApiService {
   var header = {
@@ -206,6 +209,41 @@ class ApiService {
         print("false");
         return false;
       }
+    } else if (response.statusCode == 204) {
+      print("No content received");
+      return false; // Or handle as appropriate
+    } else {
+      var body = await response.stream.bytesToString();
+      throw Exception("Error: ${response.statusCode}, Message: $body");
+    }
+  }
+
+  Future<dynamic> checkUserLoggedInOnAnotherDevice() async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    final companyName = shared.get("companyname");
+
+    StaticStoredData.deviceId = await Services.getDeviceId();
+
+    // final tellecallerid = shared.getString("telecaller_id");
+    var uri = Uri.parse(
+        "${companyName == null ? APIUrls.baseUrl : "${APIUrls.newBaseUrl}$companyName/api/index.php/"}${APIUrls.checkOnAnotherDeviceLogin}");
+
+    var request = http.MultipartRequest('POST', uri)
+      ..headers.addAll({
+        "X-API-KEY": "ftc_apikey@",
+        "Content-Type": "application/json",
+      })
+      // ..fields['telecaller_id'] = StaticStoredData.userId.toString();
+      ..fields.addAll({
+        'telecaller_id': StaticStoredData.userId.toString(),
+        'usertoken': StaticStoredData.deviceId.toString()
+      });
+    //StaticStoredData.userId;
+
+    var response = await request.send();
+
+    if (response.statusCode == 401) {
+      return true;
     } else if (response.statusCode == 204) {
       print("No content received");
       return false; // Or handle as appropriate

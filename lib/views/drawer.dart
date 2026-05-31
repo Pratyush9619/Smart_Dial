@@ -24,6 +24,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   final ProfileController _profileController = Get.find<ProfileController>();
 
   String _userName = "";
+  final RxInt _secureType = 0.obs;
 
   final ThemeController themeController = Get.find<ThemeController>();
 
@@ -37,6 +38,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _userName = prefs.getString('userName') ?? "Name";
+      _secureType.value = prefs.getInt('secureType') ?? 0;
     });
   }
 
@@ -124,17 +126,21 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     child: Column(
                       children: [
                         // if (StaticStoredData.roleName == 'telecaller')
-                        _drawerSvgTile(
-                          'assets/drawer/pin_marker.svg',
-                          'Company & Pincode',
-                          () => Get.to(
-                            () => ListingScreen(
-                              title: 'Listing',
-                              isShowBack: true,
-                              isDrawer: false,
-                            ),
-                          ),
-                        ),
+
+                        (_secureType.value == 0 &&
+                                StaticStoredData.roleName == 'telecaller')
+                            ? _drawerSvgTile(
+                                'assets/drawer/pin_marker.svg',
+                                'Company & Pincode',
+                                () => Get.to(
+                                  () => ListingScreen(
+                                    title: 'Listing',
+                                    isShowBack: true,
+                                    isDrawer: false,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
                         // if (StaticStoredData.roleName == 'telecaller')
                         //   _drawerSvgTile(
                         //     'assets/drawer/login_request.svg',
