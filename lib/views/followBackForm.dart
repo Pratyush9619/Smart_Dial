@@ -140,6 +140,7 @@ class _FollowBackFormState extends State<FollowBackForm> {
                         _formController.remarkStatus.value;
                     await Future.wait([
                       _formController.loadData(widget.isRefresh),
+                      _loginRequestController.getSourcingList(),
                       _remarkController.fetchRemarkStatus(
                           preservedContactedStatus == 'Yes' ? '1' : '2'),
                     ]);
