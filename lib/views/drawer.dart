@@ -11,6 +11,7 @@ import 'package:smart_solutions/views/listing_screen.dart';
 import 'package:smart_solutions/views/theme_change_screen.dart';
 import '../controllers/theme_controller.dart';
 import '../services/logout_helper.dart';
+import 'hrms/hrm_screen.dart';
 import 'hrms/profile_screen.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -167,12 +168,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         //   () => Get.to(() => const ForgetView()),
                         // ),
 
-                        // if (StaticStoredData.roleName == 'telecaller')
-                        //   _drawerSvgTile(
-                        //     'assets/drawer/hrm.svg',
-                        //     'HRM',
-                        //     () => Get.to(() => const HrmScreen()),
-                        //   ),
+                        if (StaticStoredData.roleName == 'telecaller')
+                          _drawerSvgTile(
+                            'assets/drawer/hrm.svg',
+                            'HRM',
+                            () => Get.to(() => const HrmScreen()),
+                          ),
                         // if (StaticStoredData.roleName == 'telecaller')
                         _drawerSvgTile(
                           'assets/drawer/theme.svg',

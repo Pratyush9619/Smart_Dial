@@ -14,6 +14,7 @@ import 'package:smart_solutions/controllers/follow_form_controller.dart';
 import 'package:smart_solutions/controllers/login_request_controller.dart';
 import 'package:smart_solutions/controllers/profile_controller.dart';
 
+import '../controllers/attendence_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/incentive_controller.dart';
 import '../services/tab_state_service.dart';
@@ -38,6 +39,7 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => ChartCardsController());
     Get.lazyPut(() => AuthController(), fenix: true);
     Get.lazyPut(() => IncentiveController(), fenix: true);
+    Get.lazyPut(() => AttendanceController());
 
     if (StaticStoredData.roleName != 'telecaller') {
       Get.lazyPut(() => AdminCallLogController(), fenix: true);
