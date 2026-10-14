@@ -168,7 +168,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         //   () => Get.to(() => const ForgetView()),
                         // ),
 
-                        if (StaticStoredData.roleName == 'telecaller')
+                        if (StaticStoredData.roleName != 'admin')
                           _drawerSvgTile(
                             'assets/drawer/hrm.svg',
                             'HRM',

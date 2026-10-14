@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
-import 'package:smart_solutions/controllers/dashboard_controller.dart';
 import 'package:smart_solutions/routes/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/theme_controller.dart';
@@ -24,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     checkForUpdate();
     _loadVersion();
-    //  _checkLoginStatus(); // Check login status when the splash screen initializes
+    _checkLoginStatus(); // Check login status when the splash screen initializes
   }
 
   Color hexToColor(String hex) {

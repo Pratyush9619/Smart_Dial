@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
@@ -21,11 +22,13 @@ import 'package:smart_solutions/views/dialer_screen.dart';
 import 'package:smart_solutions/views/listing_screen.dart';
 import 'package:smart_solutions/views/login_request_screen.dart';
 import 'package:smart_solutions/views/login_screen.dart';
+import '../controllers/attendence_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/chartCard_controller.dart';
 import '../services/logout_helper.dart';
 import '../services/tab_state_service.dart';
 import 'dashboard_screen.dart';
+import 'hrms/attendence_page.dart';
 
 class MainScreen extends StatefulWidget {
   final int pageIndex;
@@ -50,12 +53,27 @@ class _MainScreenState extends State<MainScreen> {
 
   final RxInt _secureType = 0.obs;
 
+  final AttendanceController controller = Get.put(AttendanceController());
+
   @override
   void initState() {
     super.initState();
     _previousIndex = widget.pageIndex;
     _controller = PersistentTabController(initialIndex: widget.pageIndex);
+
+    if (StaticStoredData.roleName != 'admin') {
+      //   _initializeAttendance();
+    }
+
     _loadUserName();
+  }
+
+  Future<void> _initializeAttendance() async {
+    // First request camera permission
+    await requestCameraPermission();
+
+    // Then check attendance
+    await _checkAttendance();
   }
 
   Future<void> _loadUserName() async {
@@ -381,6 +399,73 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ];
+    }
+  }
+
+  Future<void> _checkAttendance() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final today = DateTime.now().toString().split(' ')[0];
+    final savedDate = prefs.getString('attendance_date');
+
+    if (savedDate != today) {
+      // New day
+      await prefs.setString('attendance_date', today);
+      await prefs.setBool('is_punched_in', false);
+      await prefs.setBool('attendance_completed', false);
+
+      controller.isPunchedIn.value = false;
+      controller.isAttendanceCompleted.value = false;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.to(() => AttendanceView());
+      });
+
+      return;
+    }
+
+    // Same day
+    final punchedIn = prefs.getBool('is_punched_in') ?? false;
+    final completed = prefs.getBool('attendance_completed') ?? false;
+
+    controller.isPunchedIn.value = punchedIn;
+    controller.isAttendanceCompleted.value = completed;
+
+    // If not punched in and attendance is not completed,
+    // show AttendanceView
+    if (!punchedIn && !completed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.to(() => AttendanceView());
+      });
+    }
+  }
+
+  // Future<void> _checkFirstTime() async {
+  //   final prefs = await SharedPreferences.getInstance();
+
+  //   final isFirstTime = prefs.getBool('attendance_page_opened') ?? false;
+
+  //   if (!isFirstTime) {
+  //     await prefs.setBool('attendance_page_opened', true);
+
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       Get.to(() => AttendanceView());
+  //     });
+  //   }
+  // }
+
+  Future<void> requestCameraPermission() async {
+    final status = await Permission.camera.request();
+
+    if (status.isGranted) {
+      print("User accepted camera permission");
+    } else if (status.isDenied) {
+      print("User rejected camera permission");
+    } else if (status.isPermanentlyDenied) {
+      print("Camera permission permanently denied");
+
+      // Optional
+      // await openAppSettings();
     }
   }
 

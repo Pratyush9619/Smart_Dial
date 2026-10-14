@@ -108,7 +108,8 @@ class _MarkAttendancePageState extends State<MarkAttendancePage>
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xffFFFFFF), width: 2),
+                        border: Border.all(
+                            color: const Color(0xffFFFFFF), width: 2),
                       ),
                     ),
                     AnimatedBuilder(

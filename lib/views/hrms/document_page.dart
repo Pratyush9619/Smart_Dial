@@ -1,75 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:smart_solutions/widget/common_form_field.dart';
 import 'package:smart_solutions/widget/common_scaffold.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../controllers/document_controller.dart';
 
 class DocumentsPage extends StatelessWidget {
-  const DocumentsPage({super.key});
+  DocumentsPage({super.key});
+
+  final controller = Get.put(DocumentsController());
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: "Documents",
       body: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+        padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            // Search Box
             CommonTextFieldWithPrefixIcon(
-              label: "Search Text Here ",
+              label: "Search Text Here",
               controller: SearchController(),
               prefixIcon: const Icon(Icons.search_rounded),
               hintText: "Search Text Here",
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
-              child: ListView(
-                children: const [
-                  DocumentTile(
-                    title: 'Salary Slip October 2025.pdf',
-                    date: '16th May, 2024',
-                    svgPath: 'assets/hrms/PDF.svg',
-                    color: Color.fromARGB(255, 245, 242, 242),
-                  ),
-                  Divider(thickness: 1),
-                  DocumentTile(
-                    title: 'Appointment Letter.xlsx',
-                    date: '16th May, 2024',
-                    svgPath: 'assets/hrms/XSL.svg',
-                    color: Color.fromARGB(255, 249, 253, 250),
-                  ),
-                  Divider(thickness: 1),
-                  DocumentTile(
-                    title: 'Passport Photo.jpg',
-                    date: '16th May, 2024',
-                    svgPath: 'assets/hrms/JPG.svg',
-                    color: Color.fromARGB(255, 247, 251, 247),
-                  ),
-                  Divider(thickness: 1),
-                  DocumentTile(
-                    title: 'New Year Celebration.mp4',
-                    date: '16th May, 2024',
-                    svgPath: 'assets/hrms/MP4.svg',
-                    color: Color.fromARGB(255, 254, 250, 255),
-                  ),
-                ],
+              child: Obx(
+                () => controller.isLoading.value
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : ListView.separated(
+                        itemCount: controller.documents.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final doc = controller.documents[index];
+
+                          return DocumentTile(
+                            title: doc.title,
+                            date: doc.created,
+                            svgPath: getFileIcon(doc.name),
+                            color: Colors.grey.shade100,
+                            onTap: () {
+                              // open/download pdf
+                              openPdf(doc.downloadUrl);
+                            },
+                          );
+                        },
+                      ),
               ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
+
+  Future<void> openPdf(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    try {
+      final result = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!result) {
+        Get.snackbar(
+          "Error",
+          "No application found to open PDF",
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
+  }
 }
 
-// Single Document Row UI
+String getFileIcon(String fileName) {
+  final ext = fileName.split('.').last.toLowerCase();
+
+  switch (ext) {
+    case "pdf":
+      return "assets/hrms/PDF.svg";
+
+    case "xlsx":
+    case "xls":
+      return "assets/hrms/XSL.svg";
+
+    case "jpg":
+    case "jpeg":
+    case "png":
+      return "assets/hrms/JPG.svg";
+
+    case "mp4":
+      return "assets/hrms/MP4.svg";
+
+    default:
+      return "assets/hrms/file.svg";
+  }
+}
+
 class DocumentTile extends StatelessWidget {
   final String svgPath;
   final String title;
   final String date;
   final Color color;
+  final VoidCallback? onTap; // Add this
 
   const DocumentTile({
     super.key,
@@ -77,6 +119,7 @@ class DocumentTile extends StatelessWidget {
     required this.title,
     required this.date,
     required this.color,
+    this.onTap, // Add this
   });
 
   @override
@@ -84,7 +127,11 @@ class DocumentTile extends StatelessWidget {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color.withOpacity(0.1),
-        child: SvgPicture.asset(svgPath, width: 38, height: 38),
+        child: SvgPicture.asset(
+          svgPath,
+          width: 38,
+          height: 38,
+        ),
       ),
 
       title: Text(
@@ -97,11 +144,10 @@ class DocumentTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
 
-      /// 👇 SVG + DATE ROW
       subtitle: Row(
         children: [
           SvgPicture.asset(
-            'assets/hrms/calander_date.svg', // your calendar svg
+            'assets/hrms/calander_date.svg',
             width: 14,
             height: 14,
             colorFilter: const ColorFilter.mode(
@@ -117,9 +163,12 @@ class DocumentTile extends StatelessWidget {
         ],
       ),
 
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+      ),
 
-      onTap: () {},
+      onTap: onTap, // Use here
     );
   }
 }

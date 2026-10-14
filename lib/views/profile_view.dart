@@ -29,7 +29,7 @@ class ProfilePage extends StatelessWidget {
     const ViewAttendancePage(),
     const RequestLeavePage(),
     const DocumentsPage(),
-    const HolidayListPage(),
+    HolidayListPage(),
   ];
   @override
   Widget build(BuildContext context) {

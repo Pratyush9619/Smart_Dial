@@ -16,7 +16,7 @@ class QRScanPage extends GetView<AttendanceController> {
           final code = barcode.barcodes.first.rawValue;
           if (code == "OFFICE_ATTENDANCE_2026") {
             Get.back();
-            controller.markAttendance();
+            //controller.markAttendance();
           }
         },
       ),

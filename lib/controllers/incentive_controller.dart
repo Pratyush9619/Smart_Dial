@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import '../constants/api_urls.dart';
 import '../constants/static_stored_data.dart';
 import '../models/team_leader_model.dart';

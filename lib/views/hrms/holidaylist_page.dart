@@ -1,54 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:smart_solutions/widget/common_scaffold.dart';
 
+import '../../controllers/holiday_controller.dart';
+
 class HolidayListPage extends StatelessWidget {
-  const HolidayListPage({super.key});
+  HolidayListPage({super.key});
+
+  final controller = Get.put(HolidayController());
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: "Holiday List",
-      body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        children: const [
-          // ========== January ==========
-          _SectionTitle('January'),
-          SizedBox(height: 8),
-          _HolidayCard(
-            title: 'New Years',
-            weekday: 'Sunday',
-            dateText: '1st Jan 2025',
-          ),
-          SizedBox(height: 10),
-          _HolidayCard(
-            title: 'Republic Day',
-            weekday: 'Monday',
-            dateText: '26th Jan 2025',
-          ),
+      body: Obx(
+        () => controller.isLoading.value
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 16.h,
+                ),
+                children: controller.groupedHoliday.entries.expand((entry) {
+                  return [
+                    _SectionTitle(entry.key),
+                    const SizedBox(height: 8),
+                    ...entry.value.map((holiday) {
+                      final date = DateTime.parse(holiday.date);
 
-          SizedBox(height: 24),
-
-          // ========== March ==========
-          _SectionTitle('March'),
-          SizedBox(height: 8),
-          _HolidayCard(
-            title: 'Holi',
-            weekday: 'Sunday',
-            dateText: '08th Mar 2025',
-          ),
-
-          SizedBox(height: 24),
-
-          // ========== August ==========
-          _SectionTitle('August'),
-          SizedBox(height: 8),
-          _HolidayCard(
-            title: 'Independence Day',
-            weekday: 'Monday',
-            dateText: '15th Aug 2025',
-          ),
-        ],
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _HolidayCard(
+                          title: holiday.title,
+                          weekday: DateFormat('EEEE').format(date),
+                          dateText: DateFormat('dd MMM yyyy').format(date),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 24),
+                  ];
+                }).toList(),
+              ),
       ),
     );
   }
@@ -100,7 +96,7 @@ class _HolidayCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.r), 
+          borderRadius: BorderRadius.circular(6.r),
           gradient: const LinearGradient(
             colors: [
               Color(0xFFEFF6FF),

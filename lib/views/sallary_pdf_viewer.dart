@@ -55,7 +55,7 @@ class _SalarySlipPdfPageState extends State<SalarySlipPdfPage> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DocumentsController());
+    final controller = Get.put(SallarySlipController());
     final url = controller.salarySlipUrl.value;
     return CommonScaffold(
       title: "Salary Slip - ${widget.month}",

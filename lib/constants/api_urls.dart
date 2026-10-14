@@ -91,5 +91,25 @@ class APIUrls {
   static const String incentiveData = 'Auth/getincentive';
   static const String incentiveSummery = 'Auth/getincentivebytelecallerid';
 
-  static const String logout = 'Auth//logout';
+  static const String logout = 'Auth/logout';
+
+  //markAttendence
+  static const String markAttendance = 'Attendance/punch_in';
+  static const String markOutAttendance = 'Attendance/punch_out';
+
+  //view Attendance
+  static const String viewAttendance = 'Attendance/history';
+  static const String viewDocuments = 'Documents/list';
+  static const String viewHolidayList = 'Holidays/list';
+
+  //request Leave
+  static const String requestLeave = 'Request_leave/add';
+
+  //view Leave Status
+  static const String viewLeaveStatus = 'Request_leave/list';
+  // leaveCount
+  static const String leaveCounts = 'Request_leave/leave_count';
+
+  // userDetails
+  static const String userDetails = 'get_user_details';
 }

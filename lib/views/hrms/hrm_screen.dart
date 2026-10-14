@@ -1,18 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_solutions/views/hrms/document_page.dart';
 import 'package:smart_solutions/views/hrms/holidaylist_page.dart';
 import 'package:smart_solutions/views/hrms/hrm_items.dart';
-import 'package:smart_solutions/views/hrms/mark_attendence_page.dart';
 import 'package:smart_solutions/views/hrms/profile_screen.dart';
 import 'package:smart_solutions/views/hrms/request_leave_page.dart';
 import 'package:smart_solutions/views/hrms/view_attendence_page.dart';
 import 'package:smart_solutions/widget/common_scaffold.dart';
 import 'package:smart_solutions/widget/hrm_card.dart';
 
-class HrmScreen extends StatelessWidget {
+import 'attendence_page.dart';
+
+class HrmScreen extends StatefulWidget {
   const HrmScreen({super.key});
+
+  @override
+  State<HrmScreen> createState() => _HrmScreenState();
+}
+
+Future<void> requestCameraPermission() async {
+  final status = await Permission.camera.request();
+
+  if (status.isGranted) {
+    print("User accepted camera permission");
+  } else {
+    print("User rejected camera permission");
+  }
+}
+
+class _HrmScreenState extends State<HrmScreen> {
+  @override
+  initState() {
+    super.initState();
+    requestCameraPermission();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +44,12 @@ class HrmScreen extends StatelessWidget {
       HrmItem(
         icon: "assets/hrms/profile.svg",
         title: "Profile",
-        page: ProfileScreen(),
+        page: const ProfileScreen(),
       ),
       HrmItem(
           icon: "assets/hrms/mark_attendance.svg",
           title: "Mark Attendance",
-          page: MarkAttendancePage()),
+          page: AttendanceView()),
       HrmItem(
           icon: "assets/hrms/view_attendance.svg",
           title: "View Attendance",
@@ -44,7 +67,7 @@ class HrmScreen extends StatelessWidget {
       HrmItem(
         icon: "assets/hrms/holiday_list.svg",
         title: "Holiday List",
-        page: const HolidayListPage(),
+        page: HolidayListPage(),
       ),
     ];
 

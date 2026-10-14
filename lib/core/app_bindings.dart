@@ -16,6 +16,7 @@ import 'package:smart_solutions/controllers/profile_controller.dart';
 
 import '../controllers/attendence_controller.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/hrms/profile_controller.dart';
 import '../controllers/incentive_controller.dart';
 import '../services/tab_state_service.dart';
 
@@ -45,5 +46,6 @@ class AppBinding extends Bindings {
       Get.lazyPut(() => AdminCallLogController(), fenix: true);
       Get.lazyPut(() => AdminCallBackController(), fenix: true);
     }
+    Get.lazyPut(() => ViewProfileController(), fenix: true);
   }
 }

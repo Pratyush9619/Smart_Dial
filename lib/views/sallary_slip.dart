@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smart_solutions/controllers/sallary_slip_controller.dart';
-
 import 'package:smart_solutions/views/sallary_pdf_viewer.dart';
 import 'package:smart_solutions/widget/common_scaffold.dart';
 
@@ -10,7 +9,7 @@ class DocumentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DocumentsController());
+    final controller = Get.put(SallarySlipController());
 
     // Example: Load salary slip from API or URL
     controller

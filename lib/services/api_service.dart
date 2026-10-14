@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,6 @@ import 'package:smart_solutions/constants/api_urls.dart';
 import 'package:smart_solutions/constants/services.dart';
 import 'package:smart_solutions/constants/static_stored_data.dart';
 import 'package:smart_solutions/models/user_logoutcheck_model.dart';
-
 import '../routes/app_routes.dart';
 
 class ApiService {
@@ -29,6 +29,26 @@ class ApiService {
 
     print(
         "full url -->>> ${companyName == null ? APIUrls.baseUrl : "${APIUrls.newBaseUrl}$companyName/api/index.php/"}$endpoint");
+
+    return response;
+  }
+
+  Future<http.Response> getNewBaseUrlRequest(String endpoint) async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    final companyName = shared.get("companyname");
+
+    final url = "${APIUrls.newBaseUrl}$companyName/api/$endpoint";
+
+    print("Full URL --->>> $url");
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "x-api-key": APIUrls.apiKey,
+      },
+    );
+
+    print("Response --->>> ${response.body}");
 
     return response;
   }
@@ -250,6 +270,64 @@ class ApiService {
     } else {
       var body = await response.stream.bytesToString();
       throw Exception("Error: ${response.statusCode}, Message: $body");
+    }
+  }
+
+  static Future<bool> punchAttendance({
+    required bool isPunchedIn,
+    required File image,
+    required int employeeId,
+    required double lat,
+    required double lng,
+    required double radius,
+    required String url,
+  }) async {
+    try {
+      SharedPreferences shared = await SharedPreferences.getInstance();
+
+      final companyName = shared.get("companyname");
+
+      var uri = Uri.parse(
+          "${companyName == null ? APIUrls.baseUrl : "${APIUrls.newBaseUrl}$companyName/api/index.php/"}$url");
+
+      final request = http.MultipartRequest(
+        'POST',
+        uri,
+      )
+        ..headers.addAll({
+          "X-API-KEY": "ftc_apikey@",
+          "Content-Type": "application/json",
+        })
+        ..fields.addAll({
+          'employee_id': employeeId.toString(),
+          'lat': lat.toString(),
+          'lng': lng.toString(),
+          // 'qr_code': jsonEncode({
+          //   "action": "punch_in_out",
+          //   "latitude": lat.toString(),
+          //   "longitude": lng.toString(),
+          //   "radius": radius.toString(),
+          // }),
+        });
+
+      // Selfie image
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'selfie',
+          image.path,
+        ),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print("Status: ${response.statusCode}");
+      print("Response: ${response.body}");
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Punch Error: $e");
+      return false;
     }
   }
 }
